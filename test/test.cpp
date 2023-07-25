@@ -5,7 +5,7 @@
 
 #define WIDE_INTEGER_NAMESPACE ckormanyos
 
-#include <mathematica_mathlink.h>
+#include <mathematica_mathlink/mathematica_mathlink.h>
 #include <math/wide_integer/uintwide_t.h>
 
 namespace local

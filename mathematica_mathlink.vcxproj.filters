@@ -8,29 +8,35 @@
     <Filter Include="_doc">
       <UniqueIdentifier>{ab8dc408-6d70-433f-b2c7-5352298385ab}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="test.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="test_bessel_j_versus_boost.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="test_prime.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="test_divmod.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="mathematica_mathlink.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
+    <Filter Include="Source Files\mathematica_mathlink">
+      <UniqueIdentifier>{82d718cf-c155-4723-918c-66d95da356b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\test">
+      <UniqueIdentifier>{3ebaefc0-d9be-4cc5-a5bd-a57a4fbdf759}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">
       <Filter>_doc</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="test\test_bessel_j_versus_boost.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\test_divmod.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\test_prime.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\test.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mathematica_mathlink\mathematica_mathlink.h">
+      <Filter>Source Files\mathematica_mathlink</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

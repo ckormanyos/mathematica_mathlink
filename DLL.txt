@@ -1,0 +1,1 @@
+Run in the presence (or path presence) of wstp64i4.dll, a proprietary DLL.

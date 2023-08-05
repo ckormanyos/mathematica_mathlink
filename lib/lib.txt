@@ -1,0 +1,1 @@
+Link with one of wstp64i4.lib, wstp64i4s.lib or wstp64i4m.lib as needed (proprietary libraries).

@@ -8,12 +8,14 @@ mathematica_mathlink provides a C++ template header for interacting with the Mat
   - Interact directly with the Mathematica(R) kernel by sending/receiving _packets_.
   - Clean header-only C++14 design.
   - Seamless portability to any modern C++14, 17, 20, 23 compiler and beyond.
+  - Support an easy-to-use MSVC solution for simple build.
+  - Include a selection of non-trivial examples.
 
 ## Examples
 
 Several completely worked out examples are available in the repository.
 
-  - [test_bessel_j_versus_boost.cpp](./test/test_bessel_j_versus_boost.cpp) tests a variety of cylindrical Bessel function values comparing them with results from the kernel.
+  - [test_bessel_j_versus_boost.cpp](./test/test_bessel_j_versus_boost.cpp) tests a variety of high-precision cylindrical Bessel function values comparing them with results from the kernel. This test requires the `Boost.Math` and `Boost.Multiprecision` libraries.
   - [test_divmod.cpp](./test/test_divmod.cpp) generates random wide integers and tests the `divmod` function versus the kernel. This function is equivalent to Python-3's double-divide (`//`) function or Mathematica(R)'s `QuotientRemainder` function. This test program requires the [ckormanyos/wide-integer](https://github.com/ckormanyos/wide-integer) header-only C++ _wide_-_integer_ library.
   - [test_prime.cpp](./test/test_prime.cpp) generate random wide-integer prime numbers and test them with the kernel. This test program requires the [ckormanyos/wide-integer](https://github.com/ckormanyos/wide-integer) header-only C++ _wide_-_integer_ library.
 

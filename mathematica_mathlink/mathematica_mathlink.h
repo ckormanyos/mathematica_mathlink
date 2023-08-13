@@ -220,7 +220,7 @@
       return get_string_is_ok;
     }
 
-    static constexpr auto is_open() noexcept -> bool
+    static auto is_open() noexcept -> bool
     {
       return (   (global_env_ptr() != nullptr)
               && (global_lnk_ptr() != nullptr));

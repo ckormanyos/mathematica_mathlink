@@ -1,7 +1,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include <mathematica_mathlink.h>
+#include <mathematica_mathlink/mathematica_mathlink.h>
 
 #include <boost/math/special_functions/bessel.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>

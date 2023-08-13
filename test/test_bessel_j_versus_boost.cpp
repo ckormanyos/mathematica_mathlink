@@ -1,7 +1,19 @@
+///////////////////////////////////////////////////////////////////////////////
+//  Copyright Christopher Kormanyos 2022 - 2023.
+//  Distributed under the Boost Software License,
+//  Version 1.0. (See accompanying file LICENSE_1_0.txt
+//  or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+
+#if (defined(__GNUC__) && defined(__clang__))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
 #include <iomanip>
 #include <iostream>
 
-#include <mathematica_mathlink.h>
+#include <mathematica_mathlink/mathematica_mathlink.h>
 
 #include <boost/math/special_functions/bessel.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
@@ -52,3 +64,7 @@ auto main() -> int
               << std::endl;
   }
 }
+
+#if (defined(__GNUC__) && defined(__clang__))
+#pragma GCC diagnostic pop
+#endif

@@ -64,18 +64,20 @@
 
     class noncopyable : public base_token
     {
+    public:
+      virtual ~noncopyable() = default;
+
     protected:
       // Borrow a slightly modified implementation of noncopyable from Boost.
       constexpr noncopyable() = default;
-      ~noncopyable() = default;
 
-      noncopyable(const noncopyable&) = delete;
+      constexpr noncopyable(const noncopyable&) = delete;
 
-      noncopyable(noncopyable&&) noexcept = delete;
+      constexpr noncopyable(noncopyable&&) noexcept = delete;
 
-      auto operator=(const noncopyable&) -> noncopyable& = delete;
+      constexpr auto operator=(const noncopyable&) -> noncopyable& = delete;
 
-      auto operator=(noncopyable&&) noexcept -> noncopyable& = delete;
+      constexpr auto operator=(noncopyable&&) noexcept -> noncopyable& = delete;
     };
   }
 
@@ -86,7 +88,7 @@
   class mathematica_mathlink_base : private detail::noncopyable
   {
   public:
-    virtual ~mathematica_mathlink_base() noexcept = default;
+    ~mathematica_mathlink_base() noexcept override = default;
 
     virtual auto send_command(const std::string&, std::string*) const -> bool = 0;
 

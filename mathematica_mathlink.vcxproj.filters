@@ -14,10 +14,19 @@
     <Filter Include="Source Files\test">
       <UniqueIdentifier>{3ebaefc0-d9be-4cc5-a5bd-a57a4fbdf759}</UniqueIdentifier>
     </Filter>
+    <Filter Include=".github">
+      <UniqueIdentifier>{4e8b023b-d5be-425b-bb04-a6a374fb58b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include=".github\workflows">
+      <UniqueIdentifier>{0263cbfe-f731-4eab-b7f6-fb8510da933a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">
       <Filter>_doc</Filter>
+    </None>
+    <None Include=".github\workflows\mathematica_mathlink.yml">
+      <Filter>.github\workflows</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -31,6 +40,9 @@
       <Filter>Source Files\test</Filter>
     </ClCompile>
     <ClCompile Include="test\test.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\test_gcd.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
   </ItemGroup>

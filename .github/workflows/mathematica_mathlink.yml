@@ -1,0 +1,74 @@
+# ------------------------------------------------------------------------------
+#  Copyright Christopher Kormanyos 2023.
+#  Distributed under the Boost Software License,
+#  Version 1.0. (See accompanying file LICENSE_1_0.txt
+#  or copy at http://www.boost.org/LICENSE_1_0.txt)
+# ------------------------------------------------------------------------------
+
+name: mathematica_mathlink
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+jobs:
+  gcc-clang-native-with-boost:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        standard: [ c++20 ]
+        compiler: [ g++, clang++ ]
+        test: [ test_bessel_j_versus_boost ]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
+      - name: clone-submods-bootstrap-headers-boost-develop
+        run: |
+          git clone -b develop --depth 1 https://github.com/boostorg/boost.git ../boost-root
+          cd ../boost-root
+          git submodule update --init tools
+          git submodule update --init libs/config
+          git submodule update --init libs/math
+          git submodule update --init libs/multiprecision
+          ./bootstrap.sh
+          ./b2 headers
+      - name: gcc-clang-native
+        run: |
+          ${{ matrix.compiler }} -v
+          grep BOOST_VERSION ../boost-root/boost/version.hpp
+          echo "compile ./${{ matrix.test }}"
+          ${{ matrix.compiler }} -v
+          ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wundef -Wunused-parameter -Wuninitialized -Wunreachable-code -Winit-self -Wzero-as-null-pointer-constant -std=${{ matrix.standard }} -c -I. -I../boost-root ${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          echo "ls ./${{ matrix.test }}.o"
+          ls -la ./${{ matrix.test }}.o
+  gcc-clang-native-with-wide-integer:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        standard: [ c++20 ]
+        compiler: [ g++, clang++ ]
+        test: [ test_divmod, test_gcd, test_prime ]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
+      - name: clone-wide-integer-master
+        run: |
+          git clone -b master --depth 1 https://github.com/ckormanyos/wide-integer.git ../wide-integer-root
+      - name: gcc-clang-native
+        run: |
+          ${{ matrix.compiler }} -v
+          echo "compile ./${{ matrix.test }}"
+          ${{ matrix.compiler }} -v
+          ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wundef -Wunused-parameter -Wuninitialized -Wunreachable-code -Winit-self -Wzero-as-null-pointer-constant -std=${{ matrix.standard }} -c -I. -I../boost-root ${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          echo "ls ./${{ matrix.test }}.o"
+          ls -la ./${{ matrix.test }}.o

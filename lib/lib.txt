@@ -1,1 +1,2 @@
-Link with one of wstp64i4.lib, wstp64i4s.lib or wstp64i4m.lib as needed (proprietary libraries).
+Link with wstp64i4.lib (or wstp64i4s.lib or wstp64i4m.lib as needed).
+These are proprietary libraries distributed with Mathematica(R).

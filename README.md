@@ -1,6 +1,11 @@
 mathematica_mathlink
 ==================
 
+<p align="center">
+    <a href="https://github.com/ckormanyos/mathematica_mathlink/actions">
+        <img src="https://github.com/ckormanyos/mathematica_mathlink/actions/workflows/mathematica_mathlink.yml/badge.svg" alt="Build Status"></a>
+</p>
+
 mathematica_mathlink provides a C++ template header for interacting with the Mathematica(R) kernel.
 
 ## Implementation Goals

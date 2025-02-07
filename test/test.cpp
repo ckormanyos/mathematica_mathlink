@@ -23,7 +23,6 @@ namespace local
            typename UnsignedIntegralType>
   auto set_prime_candidate(RandomEngineType& engine, DistributionType& dist, UnsignedIntegralType& prime_candidate) -> bool
   {
-    using distribution_type      = DistributionType;
     using unsigned_integral_type = UnsignedIntegralType;
     using limb_type              = typename unsigned_integral_type::limb_type;
 

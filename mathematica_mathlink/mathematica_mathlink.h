@@ -9,6 +9,8 @@
   #define MATHEMATICA_MATHLINK_2022_11_09_H
 
   #include <array>
+  #include <cstdint>
+  #include <cstddef>
   #include <string>
   #include <type_traits>
   #include <vector>

@@ -6,7 +6,8 @@ mathematica_mathlink
         <img src="https://github.com/ckormanyos/mathematica_mathlink/actions/workflows/mathematica_mathlink.yml/badge.svg" alt="Build Status"></a>
 </p>
 
-mathematica_mathlink provides a C++ template header for interacting with the Mathematica(R) kernel.
+`ckormanyos/mathematica_mathlink` provides a C++ template header
+for interacting with the Mathematica(R) kernel.
 
 ## Implementation Goals
 
@@ -28,7 +29,7 @@ Several completely worked out test examples are available in the
 
 ## Additional information
 
-  - At the moment, mathematica_mathlink can only handle single return packets.
+  - At the moment, `ckormanyos/mathematica_mathlink` can only handle single return packets.
   - The path strings for finding/locating the Mathematica(R) kernel are only available for `Win*`, not for `*nix`.
-  - Link with wstp64i4.lib and run in the presence of wstp64i4.dll (proprietary libraries).
+  - Link with wstp64i4.lib and run in the presence of `wstp64i4.dll` (which are proprietary libraries).
   - CI compiles the test examples to object only (and does not link). Compilation is checked using GCC and clang compilers.

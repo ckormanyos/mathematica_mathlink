@@ -9,8 +9,8 @@
   #define MATHEMATICA_MATHLINK_2022_11_09_H
 
   #include <array>
-  #include <cstdint>
   #include <cstddef>
+  #include <cstdint>
   #include <string>
   #include <type_traits>
   #include <vector>
@@ -238,8 +238,8 @@
       // Create a list of constant arguments for opening the mathlink kernel.
       using const_args_string_array_type = ::std::array<::std::string, static_cast<::std::size_t>(UINT8_C(5))>;
 
-      const auto const_args_strings =
-        const_args_string_array_type
+      const const_args_string_array_type
+        const_args_strings
         {
           ::std::string("-linkname"),
           str_location_math_kernel_user,
@@ -248,10 +248,10 @@
           ::std::string()
         };
 
-      ::std::vector<char> c0(static_cast<::std::size_t>(UINT8_C(  64)), '\0'); detail::strcpy_unsafe(c0.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(0))].c_str());
-      ::std::vector<char> c1(static_cast<::std::size_t>(UINT8_C(1024)), '\0'); detail::strcpy_unsafe(c1.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(1))].c_str());
-      ::std::vector<char> c2(static_cast<::std::size_t>(UINT8_C(  64)), '\0'); detail::strcpy_unsafe(c2.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(2))].c_str());
-      ::std::vector<char> c3(static_cast<::std::size_t>(UINT8_C(  64)), '\0'); detail::strcpy_unsafe(c3.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(3))].c_str());
+      ::std::vector<char> c0(static_cast<::std::size_t>(UINT8_C( 512)), '\0'); detail::strcpy_unsafe(c0.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(0))].c_str());
+      ::std::vector<char> c1(static_cast<::std::size_t>(UINT8_C(4096)), '\0'); detail::strcpy_unsafe(c1.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(1))].c_str());
+      ::std::vector<char> c2(static_cast<::std::size_t>(UINT8_C( 512)), '\0'); detail::strcpy_unsafe(c2.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(2))].c_str());
+      ::std::vector<char> c3(static_cast<::std::size_t>(UINT8_C( 512)), '\0'); detail::strcpy_unsafe(c3.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(3))].c_str());
 
       // Create a list of non-constant character pointers for opening the mathlink kernel.
       using nonconst_args_ptrs_array_type = ::std::array<char*, ::std::tuple_size<const_args_string_array_type>::value>;
@@ -286,7 +286,7 @@
 
       // TBD: What about supporting non-Win* platforms like *nix?
 
-      static const char
+      constexpr char
         str_location_math_kernel_default[]
         {
           "\"C:\\Program Files\\Wolfram Research\\Mathematica\\14.0\\MathKernel.exe\""

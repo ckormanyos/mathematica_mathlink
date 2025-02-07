@@ -31,5 +31,5 @@ Several completely worked out test examples are available in the
 
   - At the moment, `ckormanyos/mathematica_mathlink` can only handle single return packets.
   - The path strings for finding/locating the Mathematica(R) kernel are only available for `Win*`, not for `*nix`.
-  - Link with wstp64i4.lib and run in the presence of `wstp64i4.dll` (which are proprietary libraries).
+  - Link with `wstp64i4.lib` and run in the presence of `wstp64i4.dll` (which are proprietary libraries).
   - CI compiles the test examples to object only (and does not link). Compilation is checked using GCC and clang compilers.

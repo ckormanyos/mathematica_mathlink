@@ -1,20 +1,20 @@
 ///////////////////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2022 - 2023.
+//  Copyright Christopher Kormanyos 2022 - 2025.
 //  Distributed under the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
+
+#define WIDE_INTEGER_NAMESPACE ckormanyos
+
+#include <mathematica_mathlink/mathematica_mathlink.h>
+#include <math/wide_integer/uintwide_t.h>
 
 #include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <random>
 #include <sstream>
-
-#define WIDE_INTEGER_NAMESPACE ckormanyos
-
-#include <mathematica_mathlink/mathematica_mathlink.h>
-#include <math/wide_integer/uintwide_t.h>
 
 namespace local
 {

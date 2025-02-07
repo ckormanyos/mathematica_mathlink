@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2022 - 2023.
+//  Copyright Christopher Kormanyos 2022 - 2025.
 //  Distributed under the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,6 +9,8 @@
   #define MATHEMATICA_MATHLINK_2022_11_09_H
 
   #include <array>
+  #include <cstdint>
+  #include <cstddef>
   #include <string>
   #include <type_traits>
   #include <vector>
@@ -49,9 +51,9 @@
     return dst;
   }
 
-  inline constexpr auto strlen_unsafe(const char* p_str) -> std::size_t
+  inline constexpr auto strlen_unsafe(const char* p_str) -> ::std::size_t
   {
-    auto count = static_cast<std::size_t>(UINT8_C(0));
+    ::std::size_t count { ::std::size_t { UINT8_C(0) } };
 
     while(*p_str != '\0') { ++p_str; ++count; } // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,altera-id-dependent-backward-branch)
 
@@ -90,7 +92,7 @@
   public:
     ~mathematica_mathlink_base() noexcept override = default;
 
-    virtual auto send_command(const std::string&, std::string*) const -> bool = 0;
+    virtual auto send_command(const ::std::string&, ::std::string*) const -> bool = 0;
 
     auto is_valid() const noexcept -> bool
     {
@@ -121,16 +123,22 @@
       static_cast<void>(close());
     }
 
-    auto send_command(const std::string& str_cmd, std::string* str_rsp) const -> bool override
+    auto send_command(const ::std::string& str_cmd, ::std::string* str_rsp) const -> bool override
     {
-      const auto suppress_output = (str_rsp == nullptr);
+      const bool suppress_output { str_rsp == nullptr };
 
-      const auto str_cmd_local = ((suppress_output) ? str_cmd + ";" : str_cmd);
+      const ::std::string str_cmd_local { (suppress_output ? str_cmd + ";" : str_cmd) };
 
-      auto send_command_is_ok = (    put_function("EvaluatePacket", static_cast<int>(INT8_C(1)))
-                                  && put_function("ToExpression", static_cast<int>(INT8_C(1)))
-                                  && put_string(str_cmd_local)
-                                  && end_packet());
+      bool
+        send_command_is_ok
+        {
+          (
+               put_function("EvaluatePacket", static_cast<int>(INT8_C(1)))
+            && put_function("ToExpression", static_cast<int>(INT8_C(1)))
+            && put_string(str_cmd_local)
+            && end_packet()
+          )
+        };
 
       if(send_command_is_ok)
       {
@@ -165,7 +173,7 @@
         }
       }
 
-      auto recv_response_is_ok = send_command_is_ok;
+      bool recv_response_is_ok { send_command_is_ok };
 
       if(send_command_is_ok)
       {
@@ -195,24 +203,24 @@
     static WSENV&  global_env_ptr() noexcept { return env_ptr; }
     static WSLINK& global_lnk_ptr() noexcept { return lnk_ptr; }
 
-    static auto next_packet ()                                 noexcept -> int  { return  ::WSNextPacket (global_lnk_ptr()); }
-    static auto new_packet  ()                                 noexcept -> int  { return  ::WSNewPacket  (global_lnk_ptr()); }
-    static auto put_function(const std::string& str, int argc) noexcept -> bool { return (::WSPutFunction(global_lnk_ptr(), str.c_str(), argc) != 0); }
-    static auto put_string  (const std::string& str)           noexcept -> bool { return (::WSPutString  (global_lnk_ptr(), str.c_str()) != 0); }
-    static auto end_packet  ()                                 noexcept -> bool { return (::WSEndPacket  (global_lnk_ptr()) != 0); }
-    static auto error       ()                                 noexcept -> int  { return  ::WSError      (global_lnk_ptr()); }
+    static auto next_packet ()                                   noexcept -> int  { return  ::WSNextPacket (global_lnk_ptr()); }
+    static auto new_packet  ()                                   noexcept -> int  { return  ::WSNewPacket  (global_lnk_ptr()); }
+    static auto put_function(const ::std::string& str, int argc) noexcept -> bool { return (::WSPutFunction(global_lnk_ptr(), str.c_str(), argc) != 0); }
+    static auto put_string  (const ::std::string& str)           noexcept -> bool { return (::WSPutString  (global_lnk_ptr(), str.c_str()) != 0); }
+    static auto end_packet  ()                                   noexcept -> bool { return (::WSEndPacket  (global_lnk_ptr()) != 0); }
+    static auto error       ()                                   noexcept -> int  { return  ::WSError      (global_lnk_ptr()); }
 
-    static auto get_string(std::string* str_rsp) -> bool
+    static auto get_string(::std::string* str_rsp) -> bool
     {
-      auto s = static_cast<const char*>(nullptr);
+      const char* s = { nullptr };
 
-      const auto get_string_is_ok = (::WSGetString(global_lnk_ptr(), &s) != static_cast<int>(INT8_C(0)));
+      const bool get_string_is_ok { (::WSGetString(global_lnk_ptr(), &s) != static_cast<int>(INT8_C(0))) };
 
       if((str_rsp != nullptr) && get_string_is_ok)
       {
         str_rsp->resize(detail::strlen_unsafe(s));
 
-        static_cast<void>(std::copy(s, s + str_rsp->size(), str_rsp->begin()));
+        static_cast<void>(::std::copy(s, s + str_rsp->size(), str_rsp->begin()));
       }
 
       ::WSReleaseString(global_lnk_ptr(), s);
@@ -222,36 +230,34 @@
 
     static auto is_open() noexcept -> bool
     {
-      return (   (global_env_ptr() != nullptr)
-              && (global_lnk_ptr() != nullptr));
+      return ((global_env_ptr() != nullptr) && (global_lnk_ptr() != nullptr));
     }
 
-    static auto do_open(const std::string& str_location_math_kernel_user) noexcept -> bool
+    static auto do_open(const ::std::string& str_location_math_kernel_user) noexcept -> bool
     {
       // Create a list of constant arguments for opening the mathlink kernel.
-      using const_args_string_array_type = std::array<std::string, static_cast<std::size_t>(UINT8_C(5))>;
+      using const_args_string_array_type = ::std::array<::std::string, static_cast<::std::size_t>(UINT8_C(5))>;
 
       const auto const_args_strings =
         const_args_string_array_type
         {
-          std::string("-linkname"),
+          ::std::string("-linkname"),
           str_location_math_kernel_user,
-          std::string("-linkmode"),
-          std::string("launch"),
-          std::string()
+          ::std::string("-linkmode"),
+          ::std::string("launch"),
+          ::std::string()
         };
 
-      auto c0 = std::vector<char>(static_cast<std::size_t>(UINT8_C(  64)), '\0'); detail::strcpy_unsafe(c0.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(0))].c_str());
-      auto c1 = std::vector<char>(static_cast<std::size_t>(UINT8_C(1024)), '\0'); detail::strcpy_unsafe(c1.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(1))].c_str());
-      auto c2 = std::vector<char>(static_cast<std::size_t>(UINT8_C(  64)), '\0'); detail::strcpy_unsafe(c2.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(2))].c_str());
-      auto c3 = std::vector<char>(static_cast<std::size_t>(UINT8_C(  64)), '\0'); detail::strcpy_unsafe(c3.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(3))].c_str());
+      ::std::vector<char> c0(static_cast<::std::size_t>(UINT8_C(  64)), '\0'); detail::strcpy_unsafe(c0.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(0))].c_str());
+      ::std::vector<char> c1(static_cast<::std::size_t>(UINT8_C(1024)), '\0'); detail::strcpy_unsafe(c1.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(1))].c_str());
+      ::std::vector<char> c2(static_cast<::std::size_t>(UINT8_C(  64)), '\0'); detail::strcpy_unsafe(c2.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(2))].c_str());
+      ::std::vector<char> c3(static_cast<::std::size_t>(UINT8_C(  64)), '\0'); detail::strcpy_unsafe(c3.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(3))].c_str());
 
       // Create a list of non-constant character pointers for opening the mathlink kernel.
-      using nonconst_args_pointers_array_type =
-        std::array<char*, std::tuple_size<const_args_string_array_type>::value>;
+      using nonconst_args_ptrs_array_type = ::std::array<char*, ::std::tuple_size<const_args_string_array_type>::value>;
 
       auto nonconst_args_pointers =
-        nonconst_args_pointers_array_type
+        nonconst_args_ptrs_array_type
         {
           c0.data(),
           c1.data(),
@@ -265,30 +271,33 @@
 
       if(global_lnk_ptr() == nullptr)
       {
-        ::WSDeinitialize(global_env_ptr()); global_env_ptr() = nullptr;
+        ::WSDeinitialize(global_env_ptr());
+
+        global_env_ptr() = nullptr;
       }
 
       return is_open();
     }
 
-    static auto str_location_mathlink_kernel_default() -> std::string
+    static auto str_location_mathlink_kernel_default() -> ::std::string
     {
-      // TBD: Is it possible (or sensible) to Query the Win* registry
-      // in order to find the default location of the mathlink kernel.
+      // TBD: Is it possible (or sensible) to query the Win* registry
+      // in order to find the default location of the mathlink kernel?
 
       // TBD: What about supporting non-Win* platforms like *nix?
 
-      constexpr char str_location_math_kernel_default[]
-      {
-        "\"C:\\Program Files\\Wolfram Research\\Mathematica\\12.1\\MathKernel.exe\""
-      };
+      static const char
+        str_location_math_kernel_default[]
+        {
+          "\"C:\\Program Files\\Wolfram Research\\Mathematica\\14.0\\MathKernel.exe\""
+        };
 
-      return std::string(str_location_math_kernel_default);
+      return ::std::string(str_location_math_kernel_default);
     }
 
     static auto open(const char* pstr_location_math_kernel_user = nullptr) noexcept -> bool
     {
-      auto result_do_open_is_ok = bool { };
+      bool result_do_open_is_ok { };
 
       if(is_open())
       {
@@ -304,7 +313,7 @@
             do_open
             (
               (pstr_location_math_kernel_user == nullptr) ? str_location_mathlink_kernel_default()
-                                                          : std::string(pstr_location_math_kernel_user)
+                                                          : ::std::string(pstr_location_math_kernel_user)
             );
         }
       }
@@ -314,7 +323,7 @@
 
     static auto close() noexcept -> bool
     {
-      const auto result_close_is_ok = is_open();
+      const bool result_close_is_ok { is_open() };
 
       if(global_lnk_ptr() != nullptr)
       {

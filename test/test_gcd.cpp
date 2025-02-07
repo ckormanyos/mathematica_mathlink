@@ -1,19 +1,19 @@
 ///////////////////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2022 - 2023.
+//  Copyright Christopher Kormanyos 2022 - 2025.
 //  Distributed under the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <chrono>
-#include <iomanip>
-#include <iostream>
-#include <random>
-
 #define WIDE_INTEGER_NAMESPACE ckormanyos
 
 #include <mathematica_mathlink/mathematica_mathlink.h>
 #include <math/wide_integer/uintwide_t.h>
+
+#include <chrono>
+#include <iomanip>
+#include <iostream>
+#include <random>
 
 namespace local
 {
@@ -51,10 +51,10 @@ namespace local
   auto generator2 = random_engine2_type { time_point<typename random_engine2_type::result_type>() };
 
   #if defined(WIDE_INTEGER_NAMESPACE)
-  using wide_integer_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(256))>;
+  using wide_integer_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(256)), std::uint16_t>;
   using distribution_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uniform_int_distribution<wide_integer_type::my_width2, typename wide_integer_type::limb_type>;
   #else
-  using wide_integer_type = ::math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(UINT32_C(256))>;
+  using wide_integer_type = ::math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(UINT32_C(256)), std::uint16_t>;
   using distribution_type = ::math::wide_integer::uniform_int_distribution<wide_integer_type::my_width2, typename wide_integer_type::limb_type>;
   #endif
 
@@ -118,7 +118,8 @@ auto main() -> int
 
   auto result_total_is_ok = true;
 
-  auto max_index = static_cast<std::uint32_t>(UINT32_C(0x400000));
+  constexpr auto max_index = static_cast<std::uint32_t>(UINT32_C(0x100000));
+
   auto run_index = static_cast<std::uint32_t>(UINT32_C(0));
 
   const auto flg = std::cout.flags();

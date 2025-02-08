@@ -26,7 +26,7 @@ namespace local
     using unsigned_integral_type = UnsignedIntegralType;
     using limb_type              = typename unsigned_integral_type::limb_type;
 
-    bool set_n_is_ok { false };
+    bool result_set_n_is_ok { false };
 
     prime_candidate = dist(engine);
 
@@ -105,13 +105,13 @@ namespace local
             // We have found a viable prime candidate. Use this prime
             // candidate to start a new Miller-Rabin primality test.
 
-            set_n_is_ok = true;
+            result_set_n_is_ok = true;
           }
         }
       }
     }
 
-    return set_n_is_ok;
+    return result_set_n_is_ok;
   }
 
   // Use the default mathlink 14.0 kernel location on Win*.
@@ -139,7 +139,7 @@ namespace local
     return static_cast<local_integral_time_point_type>(current_now);
   }
 
-  auto seed_prescaler = std::uint32_t { };
+  std::uint32_t seed_prescaler { };
 
   using random_engine1_type = std::linear_congruential_engine<std::uint32_t, UINT32_C(48271), UINT32_C(0), UINT32_C(2147483647)>;
   using random_engine2_type = std::mt19937;
@@ -166,18 +166,22 @@ namespace local
 
   auto get_pseudo_random_prime(wide_integer_type* p_prime = nullptr) -> void
   {
-    auto p0 = wide_integer_type { };
+    wide_integer_type p0 { };
 
     for(;;)
     {
       while(!set_prime_candidate<distribution_type>(generator1, dist, p0)) { ; }
 
-      const auto is_prime_candidate = miller_rabin(p0,
-                                                   local_unsigned_fast_type { UINT8_C(25) },
-                                                   dist,
-                                                   generator2);
+      const bool
+        result_candidate_is_prime
+        {
+          miller_rabin(p0,
+                       local_unsigned_fast_type { UINT8_C(25) },
+                       dist,
+                       generator2)
+        };
 
-      if(is_prime_candidate)
+      if(result_candidate_is_prime)
       {
         break;
       }

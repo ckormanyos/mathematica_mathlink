@@ -133,8 +133,8 @@
         send_command_is_ok
         {
           (
-               put_function("EvaluatePacket", static_cast<int>(INT8_C(1)))
-            && put_function("ToExpression", static_cast<int>(INT8_C(1)))
+               put_function("EvaluatePacket", int { INT8_C(1) })
+            && put_function("ToExpression", int { INT8_C(1) })
             && put_string(str_cmd_local)
             && end_packet()
           )
@@ -154,17 +154,17 @@
           // Skip any (next)-packets before the first ReturnPacket.
           const auto next_packet_result = next_packet();
 
-          if(   (next_packet_result == static_cast<int>(INT8_C(0)))
+          if(   (next_packet_result == int { INT8_C(0) })
              || (next_packet_result == return_packet_id()))
           {
             break;
           }
 
-          const auto new_packet_result = new_packet();
+          const int new_packet_result { new_packet() };
 
           static_cast<void>(new_packet_result);
 
-          if(error() != static_cast<int>(INT8_C(0)))
+          if(error() != int { INT8_C(0) })
           {
             send_command_is_ok = false;
 
@@ -197,7 +197,7 @@
     static constexpr auto return_packet_id() noexcept -> int
     {
       // The value of RETURNPKT is 3.
-      return static_cast<int>(INT8_C(3));
+      return int { INT8_C(3) };
     }
 
     static WSENV&  global_env_ptr() noexcept { return env_ptr; }
@@ -212,20 +212,26 @@
 
     static auto get_string(::std::string* str_rsp) -> bool
     {
-      const char* s = { nullptr };
+      const char* p_str_rsp_ws_get { nullptr };
 
-      const bool get_string_is_ok { (::WSGetString(global_lnk_ptr(), &s) != static_cast<int>(INT8_C(0))) };
+      const bool
+        result_get_string_is_ok
+        {
+          (::WSGetString(global_lnk_ptr(), &p_str_rsp_ws_get) != static_cast<int>(INT8_C(0)))
+        };
 
-      if((str_rsp != nullptr) && get_string_is_ok)
+      if((str_rsp != nullptr) && result_get_string_is_ok)
       {
-        str_rsp->resize(detail::strlen_unsafe(s));
+        const ::std::size_t rsp_len_ws_get { detail::strlen_unsafe(p_str_rsp_ws_get) };
 
-        static_cast<void>(::std::copy(s, s + str_rsp->size(), str_rsp->begin()));
+        str_rsp->resize(rsp_len_ws_get);
+
+        static_cast<void>(::std::copy(p_str_rsp_ws_get, p_str_rsp_ws_get + rsp_len_ws_get, str_rsp->begin()));
       }
 
-      ::WSReleaseString(global_lnk_ptr(), s);
+      ::WSReleaseString(global_lnk_ptr(), p_str_rsp_ws_get);
 
-      return get_string_is_ok;
+      return result_get_string_is_ok;
     }
 
     static auto is_open() noexcept -> bool
@@ -236,7 +242,7 @@
     static auto do_open(const ::std::string& str_location_math_kernel_user) noexcept -> bool
     {
       // Create a list of constant arguments for opening the mathlink kernel.
-      using const_args_string_array_type = ::std::array<::std::string, static_cast<::std::size_t>(UINT8_C(5))>;
+      using const_args_string_array_type = ::std::array<::std::string, ::std::size_t { UINT8_C(5) }>;
 
       const const_args_string_array_type
         const_args_strings
@@ -248,10 +254,10 @@
           ::std::string()
         };
 
-      ::std::vector<char> c0(static_cast<::std::size_t>(UINT8_C( 512)), '\0'); detail::strcpy_unsafe(c0.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(0))].c_str());
-      ::std::vector<char> c1(static_cast<::std::size_t>(UINT8_C(4096)), '\0'); detail::strcpy_unsafe(c1.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(1))].c_str());
-      ::std::vector<char> c2(static_cast<::std::size_t>(UINT8_C( 512)), '\0'); detail::strcpy_unsafe(c2.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(2))].c_str());
-      ::std::vector<char> c3(static_cast<::std::size_t>(UINT8_C( 512)), '\0'); detail::strcpy_unsafe(c3.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(3))].c_str());
+      ::std::vector<char> c0(::std::size_t { UINT8_C( 512) }, '\0'); detail::strcpy_unsafe(c0.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(0))].c_str());
+      ::std::vector<char> c1(::std::size_t { UINT8_C(4096) }, '\0'); detail::strcpy_unsafe(c1.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(1))].c_str());
+      ::std::vector<char> c2(::std::size_t { UINT8_C( 512) }, '\0'); detail::strcpy_unsafe(c2.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(2))].c_str());
+      ::std::vector<char> c3(::std::size_t { UINT8_C( 512) }, '\0'); detail::strcpy_unsafe(c3.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(3))].c_str());
 
       // Create a list of non-constant character pointers for opening the mathlink kernel.
       using nonconst_args_ptrs_array_type = ::std::array<char*, ::std::tuple_size<const_args_string_array_type>::value>;
@@ -267,7 +273,7 @@
         };
 
       // Open the mathlink kernel.
-      global_lnk_ptr() = ::WSOpen(int(const_args_strings.size()), nonconst_args_pointers.data());
+      global_lnk_ptr() = ::WSOpen(static_cast<int>(const_args_strings.size()), nonconst_args_pointers.data());
 
       if(global_lnk_ptr() == nullptr)
       {
@@ -292,7 +298,7 @@
           "\"C:\\Program Files\\Wolfram Research\\Mathematica\\14.0\\MathKernel.exe\""
         };
 
-      return ::std::string(str_location_math_kernel_default);
+      return ::std::string { str_location_math_kernel_default };
     }
 
     static auto open(const char* pstr_location_math_kernel_user = nullptr) noexcept -> bool

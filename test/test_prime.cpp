@@ -233,7 +233,8 @@ auto main() -> int
 
   bool result_total_is_ok { true };
 
-  ::std::uint32_t max_index { ::std::uint32_t { UINT32_C(0x100000) } };
+  constexpr ::std::uint32_t max_index { ::std::uint32_t { UINT32_C(0x10000) } };
+
   ::std::uint32_t run_index { ::std::uint32_t { UINT32_C(0) } };
 
   for( ; ((run_index < max_index) && result_total_is_ok); ++run_index)

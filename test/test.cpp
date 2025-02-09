@@ -16,8 +16,17 @@
 #include <random>
 #include <sstream>
 
-namespace local
+namespace prime_q
 {
+  // Use the default mathlink 14.0 kernel location on Win*.
+  constexpr char independent_test_system_mathlink_location[]
+  {
+    "\"C:\\Program Files\\Wolfram Research\\Mathematica\\14.0\\MathKernel.exe\""
+  };
+
+  ::std::uint32_t seed_prescaler { };
+  ::std::uint64_t trials_total_times10 { };
+
   template<typename DistributionType,
            typename RandomEngineType,
            typename UnsignedIntegralType>
@@ -32,44 +41,44 @@ namespace local
 
     const limb_type hi_limb { prime_candidate.crepresentation().back() };
 
-    const std::uint8_t
+    const ::std::uint8_t
       hi_nibble
       {
-        static_cast<std::uint8_t>
+        static_cast<::std::uint8_t>
         (
-          static_cast<std::uint8_t>
+          static_cast<::std::uint8_t>
           (
-            hi_limb >> static_cast<unsigned>(std::numeric_limits<limb_type>::digits - 4)
-          ) & std::uint8_t { UINT8_C(0xF) }
+            hi_limb >> static_cast<unsigned>(::std::numeric_limits<limb_type>::digits - 4)
+          ) & ::std::uint8_t { UINT8_C(0xF) }
         )
       };
 
-    if(hi_nibble != std::uint8_t { UINT8_C(0) })
+    if(hi_nibble != ::std::uint8_t { UINT8_C(0) })
     {
       const limb_type lo_limb = prime_candidate.crepresentation().front();
 
-      const std::uint8_t
+      const ::std::uint8_t
         lo_bit
         {
-          static_cast<std::uint8_t>
+          static_cast<::std::uint8_t>
           (
-            static_cast<std::uint8_t>(lo_limb) & std::uint8_t { UINT8_C(1) }
+            static_cast<::std::uint8_t>(lo_limb) & ::std::uint8_t { UINT8_C(1) }
           )
         };
 
       // Remove all even candidates since they are non-prime.
-      if(lo_bit != std::uint8_t { UINT8_C(0) })
+      if(lo_bit != ::std::uint8_t { UINT8_C(0) })
       {
-        const std::uint8_t
+        const ::std::uint8_t
           lo_digit10
           {
-            static_cast<std::uint8_t>(prime_candidate % std::uint8_t { UINT8_C(10) })
+            static_cast<::std::uint8_t>(prime_candidate % ::std::uint8_t { UINT8_C(10) })
           };
 
         // Continue by removing candidates having trailing digit 5.
         // The result is all candidates have trailing digit 1,3,7,9
 
-        if(lo_digit10 != std::uint8_t { UINT8_C(5) })
+        if(lo_digit10 != ::std::uint8_t { UINT8_C(5) })
         {
           // Now remove candidates having digital root 3, 6 or 9
           // because these are divisible by 3 and thus non-prime.
@@ -82,22 +91,22 @@ namespace local
               prime_candidate - static_cast<limb_type>( unsigned { UINT8_C(1) })
             };
 
-          const std::uint8_t
+          const ::std::uint8_t
             digital_root
             {
-              static_cast<std::uint8_t>
+              static_cast<::std::uint8_t>
               (
-                  std::uint8_t { UINT8_C(1) }
-                + static_cast<std::uint8_t>(n_minus_one % std::uint8_t { UINT8_C(9) })
+                  ::std::uint8_t { UINT8_C(1) }
+                + static_cast<::std::uint8_t>(n_minus_one % ::std::uint8_t { UINT8_C(9) })
               )
             };
 
           const bool
             not_digital_root_of_3_6_or_9
             {
-                 (digital_root != std::uint8_t { UINT8_C(3) })
-              && (digital_root != std::uint8_t { UINT8_C(6) })
-              && (digital_root != std::uint8_t { UINT8_C(9) })
+                 (digital_root != ::std::uint8_t { UINT8_C(3) })
+              && (digital_root != ::std::uint8_t { UINT8_C(6) })
+              && (digital_root != ::std::uint8_t { UINT8_C(9) })
             };
 
           if(not_digital_root_of_3_6_or_9)
@@ -106,6 +115,8 @@ namespace local
             // candidate to start a new Miller-Rabin primality test.
 
             result_set_n_is_ok = true;
+
+            trials_total_times10 = std::uint64_t { trials_total_times10 + unsigned { UINT8_C(10) } };
           }
         }
       }
@@ -114,23 +125,17 @@ namespace local
     return result_set_n_is_ok;
   }
 
-  // Use the default mathlink 14.0 kernel location on Win*.
-  constexpr char independent_test_system_mathlink_location[]
-  {
-    "\"C:\\Program Files\\Wolfram Research\\Mathematica\\14.0\\MathKernel.exe\""
-  };
-
   template<typename IntegralTimePointType,
-           typename ClockType = std::chrono::high_resolution_clock>
+           typename ClockType = ::std::chrono::high_resolution_clock>
   auto time_point() -> IntegralTimePointType
   {
     using local_integral_time_point_type = IntegralTimePointType;
     using local_clock_type               = ClockType;
 
     const auto current_now =
-      static_cast<std::uintmax_t>
+      static_cast<::std::uintmax_t>
       (
-        std::chrono::duration_cast<std::chrono::nanoseconds>
+        ::std::chrono::duration_cast<::std::chrono::nanoseconds>
         (
           local_clock_type::now().time_since_epoch()
         ).count()
@@ -139,38 +144,25 @@ namespace local
     return static_cast<local_integral_time_point_type>(current_now);
   }
 
-  std::uint32_t seed_prescaler { };
-
-  using random_engine1_type = std::linear_congruential_engine<std::uint32_t, UINT32_C(48271), UINT32_C(0), UINT32_C(2147483647)>;
-  using random_engine2_type = std::mt19937;
-
-  auto generator1 = random_engine1_type { time_point<typename random_engine1_type::result_type>() };
-  auto generator2 = random_engine2_type { time_point<typename random_engine2_type::result_type>() };
-
-  #if defined(WIDE_INTEGER_NAMESPACE)
-  using wide_integer_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(512))>;
-  using distribution_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uniform_int_distribution<wide_integer_type::my_width2, typename wide_integer_type::limb_type>;
-  using local_unsigned_fast_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::unsigned_fast_type;
-  #else
-  using wide_integer_type = ::math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(UINT32_C(512))>;
-  using distribution_type = ::math::wide_integer::uniform_int_distribution<wide_integer_type::my_width2, typename wide_integer_type::limb_type>;
-  using local_unsigned_fast_type = ::math::wide_integer::unsigned_fast_type;
-  #endif
-
-  distribution_type
-    dist
-    {
-      (std::numeric_limits<wide_integer_type>::min)(),
-      (std::numeric_limits<wide_integer_type>::max)()
-    };
-
-  auto get_pseudo_random_prime(wide_integer_type* p_prime = nullptr) -> void
+  template<typename DistributionType,
+           typename RandomEngineType1,
+           typename RandomEngineType2,
+           typename UnsignedIntegralType>
+  auto get_pseudo_random_prime(DistributionType& dist, RandomEngineType1& generator1, RandomEngineType2& generator2, UnsignedIntegralType* p_prime = nullptr) -> void
   {
-    wide_integer_type p0 { };
+    using local_wide_integer_type = UnsignedIntegralType;
+
+    local_wide_integer_type p0 { };
 
     for(;;)
     {
-      while(!set_prime_candidate<distribution_type>(generator1, dist, p0)) { ; }
+      while(!set_prime_candidate(generator1, dist, p0)) { ; }
+
+      #if defined(WIDE_INTEGER_NAMESPACE)
+      using local_unsigned_fast_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::unsigned_fast_type;
+      #else
+      using local_unsigned_fast_type = ::math::wide_integer::unsigned_fast_type;
+      #endif
 
       const bool
         result_candidate_is_prime
@@ -188,10 +180,13 @@ namespace local
 
       ++seed_prescaler;
 
-      const auto prescaler_mod = static_cast<std::uint32_t>(seed_prescaler % static_cast<std::uint32_t>(UINT16_C(1024)));
+      const auto prescaler_mod = static_cast<::std::uint32_t>(seed_prescaler % static_cast<::std::uint32_t>(UINT16_C(1024)));
 
-      if(prescaler_mod == static_cast<std::uint32_t>(UINT8_C(0)))
+      if(prescaler_mod == static_cast<::std::uint32_t>(UINT8_C(0)))
       {
+        using random_engine1_type = RandomEngineType1;
+        using random_engine2_type = RandomEngineType2;
+
         using random_result1_type = typename random_engine1_type::result_type;
         using random_result2_type = typename random_engine2_type::result_type;
 
@@ -205,60 +200,116 @@ namespace local
       *p_prime = p0;
     }
   }
-} // namespace local
+} // namespace prime_q
 
 auto main() -> int;
 
 auto main() -> int
 {
-  using local_mathematica_mathlink_type = mathematica::mathematica_mathlink<local::independent_test_system_mathlink_location>;
+  using random_engine1_type = ::std::linear_congruential_engine<::std::uint32_t, UINT32_C(48271), UINT32_C(0), UINT32_C(2147483647)>;
+  using random_engine2_type = ::std::mt19937;
+
+  random_engine1_type generator1 { prime_q::time_point<typename random_engine1_type::result_type>() };
+  random_engine2_type generator2 { prime_q::time_point<typename random_engine2_type::result_type>() };
+
+  #if defined(WIDE_INTEGER_NAMESPACE)
+  using local_wide_integer_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t { UINT16_C(256) }>;
+  using local_distribution_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uniform_int_distribution<local_wide_integer_type::my_width2, typename local_wide_integer_type::limb_type>;
+  #else
+  using local_wide_integer_type = ::math::wide_integer::uintwide_t<math::wide_integer::size_t { UINT16_C(256) }>;
+  using local_distribution_type = ::math::wide_integer::uniform_int_distribution<local_wide_integer_type::my_width2, typename local_wide_integer_type::limb_type>;
+  #endif
+
+  local_distribution_type
+    dist
+    {
+      (::std::numeric_limits<local_wide_integer_type>::min)(),
+      (::std::numeric_limits<local_wide_integer_type>::max)()
+    };
+
+  using local_mathematica_mathlink_type = mathematica::mathematica_mathlink<prime_q::independent_test_system_mathlink_location>;
 
   local_mathematica_mathlink_type mlnk { };
 
   bool result_total_is_ok { true };
 
-  std::uint32_t max_index { std::uint32_t { UINT32_C(0x10000) } };
-  std::uint32_t run_index { std::uint32_t { UINT32_C(0) } };
+  constexpr ::std::uint32_t max_index { ::std::uint32_t { UINT32_C(0x100000) } };
+
+  ::std::uint32_t run_index { ::std::uint32_t { UINT32_C(0) } };
 
   for( ; ((run_index < max_index) && result_total_is_ok); ++run_index)
   {
-    auto prime_candidate = local::wide_integer_type { };
+    local_wide_integer_type prime_candidate { };
 
-    local::get_pseudo_random_prime(&prime_candidate);
+    prime_q::get_pseudo_random_prime(dist, generator1, generator2, &prime_candidate);
 
-    const std::string str_prime_candidate { to_string(prime_candidate) };
+    const ::std::string str_prime_candidate { to_string(prime_candidate) };
 
-    const std::string str_cmd { "PrimeQ[" + str_prime_candidate + "]" };
+    const ::std::string str_cmd { "PrimeQ[" + str_prime_candidate + "]" };
 
-    std::string str_rsp { };
+    ::std::string str_rsp { };
 
     mlnk.send_command(str_cmd, &str_rsp);
 
-    const bool result_prime_candidate_is_ok { (str_rsp.find("True") != std::string::npos) };
+    const bool result_prime_candidate_is_ok { (str_rsp.find("True") != ::std::string::npos) };
 
     result_total_is_ok = (result_prime_candidate_is_ok && result_total_is_ok);
 
-    std::stringstream strm { };
+    const float
+      ratio
+      {
+        static_cast<float>
+        (
+            prime_q::trials_total_times10
+          / std::uint32_t { run_index + unsigned { UINT8_C(1) } }
+        )
+        / 10.0F
+      };
 
-    strm << "run_index: "
-         << run_index
-         << ", prime candidate : "
-         << str_prime_candidate
-         << ", is prime? "
-         << std::boolalpha
-         << result_prime_candidate_is_ok;
+    ::std::string str_report { };
 
-    std::cout << strm.str() << std::endl;
+    {
+      ::std::stringstream strm { };
+
+      strm << "idx: "
+           << run_index
+           << ", p: "
+           << std::setw(std::numeric_limits<local_wide_integer_type>::digits10 + 1)
+           << std::right
+           << str_prime_candidate
+           ;
+
+      str_report = strm.str();
+    }
+
+    {
+      ::std::stringstream strm { };
+
+      strm << ", prime? "
+           << ::std::boolalpha
+           << result_prime_candidate_is_ok
+           << ", pi': "
+           << std::fixed
+           << std::setprecision(1)
+           << ratio
+           ;
+
+      str_report += strm.str();
+    }
+
+    ::std::cout << str_report << ::std::endl;
   }
 
-  result_total_is_ok = ((run_index == max_index) && result_total_is_ok);
+  {
+    result_total_is_ok = ((run_index == max_index) && result_total_is_ok);
 
-  std::stringstream strm { };
+    ::std::stringstream strm { };
 
-  strm << "Summary                   : " << run_index      << " trials"          << '\n';
-  strm << "result_total_is_ok        : " << std::boolalpha << result_total_is_ok << '\n';
+    strm << "Summary                   : " << run_index        << " trials"          << '\n';
+    strm << "result_total_is_ok        : " << ::std::boolalpha << result_total_is_ok << '\n';
 
-  std::cout << std::endl << strm.str() << std::endl;
+    ::std::cout << ::std::endl << strm.str() << ::std::endl;
+  }
 
   return (result_total_is_ok ? 0 : -1);
 }

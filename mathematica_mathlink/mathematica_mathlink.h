@@ -41,6 +41,9 @@
 
   namespace detail {
 
+  // The value of RETURNPKT is 3.
+  constexpr int RETURNPKT { INT8_C(3) };
+
   // Use a local implementation of string copy.
   template<typename DestinationIterator,
            typename SourceIterator>
@@ -116,7 +119,7 @@
     // TBD: Make this class thread safe by using synchronization mechanisms
     // when accessing the WSTP-objects.
 
-    mathematica_mathlink() noexcept : my_valid(open()) { }
+    mathematica_mathlink() noexcept : my_valid { open() } { }
 
     ~mathematica_mathlink() noexcept override
     {
@@ -152,7 +155,7 @@
           // Maybe TODO: Extend/expand this to handle multiple returned packets.
 
           // Skip any (next)-packets before the first ReturnPacket.
-          const auto next_packet_result = next_packet();
+          const int next_packet_result { next_packet() };
 
           if(   (next_packet_result == int { INT8_C(0) })
              || (next_packet_result == return_packet_id()))
@@ -196,8 +199,7 @@
 
     static constexpr auto return_packet_id() noexcept -> int
     {
-      // The value of RETURNPKT is 3.
-      return int { INT8_C(3) };
+      return detail::RETURNPKT;
     }
 
     static WSENV&  global_env_ptr() noexcept { return env_ptr; }
@@ -254,10 +256,10 @@
           ::std::string()
         };
 
-      ::std::vector<char> c0(::std::size_t { UINT8_C( 512) }, '\0'); detail::strcpy_unsafe(c0.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(0))].c_str());
+      ::std::vector<char> c0(::std::size_t { UINT8_C(1024) }, '\0'); detail::strcpy_unsafe(c0.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(0))].c_str());
       ::std::vector<char> c1(::std::size_t { UINT8_C(4096) }, '\0'); detail::strcpy_unsafe(c1.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(1))].c_str());
-      ::std::vector<char> c2(::std::size_t { UINT8_C( 512) }, '\0'); detail::strcpy_unsafe(c2.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(2))].c_str());
-      ::std::vector<char> c3(::std::size_t { UINT8_C( 512) }, '\0'); detail::strcpy_unsafe(c3.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(3))].c_str());
+      ::std::vector<char> c2(::std::size_t { UINT8_C(1024) }, '\0'); detail::strcpy_unsafe(c2.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(2))].c_str());
+      ::std::vector<char> c3(::std::size_t { UINT8_C(1024) }, '\0'); detail::strcpy_unsafe(c3.data(), const_args_strings[static_cast<std::size_t>(UINT8_C(3))].c_str());
 
       // Create a list of non-constant character pointers for opening the mathlink kernel.
       using nonconst_args_ptrs_array_type = ::std::array<char*, ::std::tuple_size<const_args_string_array_type>::value>;

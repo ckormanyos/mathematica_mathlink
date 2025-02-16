@@ -25,7 +25,7 @@ namespace prime_q
   };
 
   ::std::uint32_t seed_prescaler { };
-  ::std::uint64_t trials_total_times10 { };
+  ::std::uint64_t trials_total_times100 { };
 
   template<typename DistributionType,
            typename RandomEngineType,
@@ -116,7 +116,7 @@ namespace prime_q
 
             result_set_n_is_ok = true;
 
-            trials_total_times10 = std::uint64_t { trials_total_times10 + unsigned { UINT8_C(10) } };
+            trials_total_times100 = std::uint64_t { trials_total_times100 + unsigned { UINT8_C(100) } };
           }
         }
       }
@@ -260,26 +260,28 @@ auto main() -> int
       {
         static_cast<float>
         (
-            prime_q::trials_total_times10
+            prime_q::trials_total_times100
           / std::uint32_t { run_index + unsigned { UINT8_C(1) } }
         )
-        / 10.0F
+        / 100.0F
       };
 
-    ::std::string str_report { };
+    ::std::string str_report_this_prime { };
 
     {
       ::std::stringstream strm { };
 
       strm << "idx: "
+           << std::setw(std::streamsize { INT8_C(9) })
+           << std::right
            << run_index
            << ", p: "
-           << std::setw(std::numeric_limits<local_wide_integer_type>::digits10 + 1)
+           << std::setw(std::streamsize { std::numeric_limits<local_wide_integer_type>::digits10 + 1 })
            << std::right
            << str_prime_candidate
            ;
 
-      str_report = strm.str();
+      str_report_this_prime = strm.str();
     }
 
     {
@@ -290,14 +292,14 @@ auto main() -> int
            << result_prime_candidate_is_ok
            << ", pi': "
            << std::fixed
-           << std::setprecision(1)
+           << std::setprecision(2)
            << ratio
            ;
 
-      str_report += strm.str();
+      str_report_this_prime += strm.str();
     }
 
-    ::std::cout << str_report << ::std::endl;
+    ::std::cout << str_report_this_prime << ::std::endl;
   }
 
   {

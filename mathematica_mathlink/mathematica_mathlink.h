@@ -8,6 +8,7 @@
 #ifndef MATHEMATICA_MATHLINK_2022_11_09_H
   #define MATHEMATICA_MATHLINK_2022_11_09_H
 
+  #include <algorithm>
   #include <array>
   #include <cstddef>
   #include <cstdint>
@@ -47,14 +48,14 @@
   // Use a local implementation of string copy.
   template<typename DestinationIterator,
            typename SourceIterator>
-  inline constexpr auto strcpy_unsafe(DestinationIterator dst, SourceIterator src) -> DestinationIterator
+  constexpr auto strcpy_unsafe(DestinationIterator dst, SourceIterator src) -> DestinationIterator
   {
     while((*dst++ = *src++) != '\0') { ; } // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
     return dst;
   }
 
-  inline constexpr auto strlen_unsafe(const char* p_str) -> ::std::size_t
+  constexpr auto strlen_unsafe(const char* p_str) -> ::std::size_t
   {
     ::std::size_t count { ::std::size_t { UINT8_C(0) } };
 
@@ -149,8 +150,8 @@
         {
           // NOTE: This method only works for single returned packets.
 
-          // For instance if the response from the Mathlink kernel has more
-          // than ons single component, then this sequence fails.
+          // For instance if the response from the Mathlink kernel has
+          // more than one single component, then this sequence fails.
 
           // Maybe TODO: Extend/expand this to handle multiple returned packets.
 
@@ -192,7 +193,7 @@
     static WSENV  env_ptr;
     static WSLINK lnk_ptr;
 
-    auto get_valid() const noexcept -> bool override
+    constexpr auto get_valid() const noexcept -> bool override
     {
       return my_valid;
     }

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2022 - 2025.
+//  Copyright Christopher Kormanyos 2022 - 2026.
 //  Distributed under the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -24,8 +24,29 @@ namespace prime_q
     "\"C:\\Program Files\\Wolfram Research\\Mathematica\\14.0\\MathKernel.exe\""
   };
 
+  using local_mathematica_mathlink_type = mathematica::mathematica_mathlink<independent_test_system_mathlink_location>;
+
+  template<typename DistributionType,
+           typename RandomEngineType,
+           typename UnsignedIntegralType>
+  auto set_prime_candidate(RandomEngineType& engine, DistributionType& dist, UnsignedIntegralType& prime_candidate) -> bool;
+
+  template<typename IntegralTimePointType,
+           typename ClockType = ::std::chrono::high_resolution_clock>
+  auto time_point() -> IntegralTimePointType;
+
+  template<typename DistributionType,
+           typename RandomEngineType1,
+           typename RandomEngineType2,
+           typename UnsignedIntegralType>
+  auto get_pseudo_random_prime(DistributionType& dist,
+                               RandomEngineType1& generator1,
+                               RandomEngineType2& generator2,
+                               UnsignedIntegralType* p_prime = nullptr,
+                               local_mathematica_mathlink_type* p_mlink = nullptr) -> bool;
+
   ::std::uint32_t seed_prescaler { };
-  ::std::uint64_t trials_total_times100 { };
+  ::std::uint64_t trials_total_times1000 { };
 
   template<typename DistributionType,
            typename RandomEngineType,
@@ -116,7 +137,8 @@ namespace prime_q
 
             result_set_n_is_ok = true;
 
-            trials_total_times100 = std::uint64_t { trials_total_times100 + unsigned { UINT8_C(100) } };
+            // Increment the trials-times-1000 counter by one new trial (add 1,000).
+            trials_total_times1000 = std::uint64_t { trials_total_times1000 + unsigned { UINT16_C(1000) } };
           }
         }
       }
@@ -126,7 +148,7 @@ namespace prime_q
   }
 
   template<typename IntegralTimePointType,
-           typename ClockType = ::std::chrono::high_resolution_clock>
+           typename ClockType>
   auto time_point() -> IntegralTimePointType
   {
     using local_integral_time_point_type = IntegralTimePointType;
@@ -148,11 +170,17 @@ namespace prime_q
            typename RandomEngineType1,
            typename RandomEngineType2,
            typename UnsignedIntegralType>
-  auto get_pseudo_random_prime(DistributionType& dist, RandomEngineType1& generator1, RandomEngineType2& generator2, UnsignedIntegralType* p_prime = nullptr) -> void
+  auto get_pseudo_random_prime(DistributionType& dist,
+                               RandomEngineType1& generator1,
+                               RandomEngineType2& generator2,
+                               UnsignedIntegralType* p_prime,
+                               local_mathematica_mathlink_type* p_mlink) -> bool
   {
     using local_wide_integer_type = UnsignedIntegralType;
 
     local_wide_integer_type p0 { };
+
+    bool result_total_is_ok {true };
 
     for(;;)
     {
@@ -175,23 +203,53 @@ namespace prime_q
 
       if(result_candidate_is_prime)
       {
+        result_total_is_ok = (result_candidate_is_prime && result_total_is_ok);
+
         break;
+      }
+      else if(p_mlink != nullptr)
+      {
+        // If a non-null Mathlink object has been provided, then check
+        // each suspected non-prime for non-primality also via Mathlink.
+
+        const ::std::string str_non_prime_candidate { to_string(p0) };
+
+        const ::std::string str_cmd { "PrimeQ[" + str_non_prime_candidate + "]" };
+
+        ::std::string str_rsp { };
+
+        p_mlink->send_command(str_cmd, &str_rsp);
+
+        const bool result_non_prime_candidate_is_ok { (str_rsp.find("False") != ::std::string::npos) };
+
+        result_total_is_ok = (result_non_prime_candidate_is_ok && result_total_is_ok);
+
+        if(!result_total_is_ok)
+        {
+          ::std::cout << "\nError: p0: "
+                      << p0
+                      << "\nML disagrees with non-prime (the response was !False), and thus it is prime."
+                      << "\nBut wide_integer did not properly identify the candidate to be prime.\n"
+                      << std::endl;
+
+          break;
+        }
       }
 
       ++seed_prescaler;
 
-      const auto prescaler_mod = static_cast<::std::uint32_t>(seed_prescaler % static_cast<::std::uint32_t>(UINT16_C(1024)));
+      const auto seed_prescaler_mod1024 = static_cast<::std::uint32_t>(seed_prescaler % static_cast<::std::uint32_t>(UINT16_C(1024)));
 
-      if(prescaler_mod == static_cast<::std::uint32_t>(UINT8_C(0)))
+      if(seed_prescaler_mod1024 == static_cast<::std::uint32_t>(UINT8_C(0)))
       {
         using random_engine1_type = RandomEngineType1;
         using random_engine2_type = RandomEngineType2;
 
-        using random_result1_type = typename random_engine1_type::result_type;
-        using random_result2_type = typename random_engine2_type::result_type;
+        using random_engine1_result_type = typename random_engine1_type::result_type;
+        using random_engine2_result_type = typename random_engine2_type::result_type;
 
-        generator1.seed(time_point<random_result1_type>());
-        generator2.seed(time_point<random_result2_type>());
+        generator1.seed(time_point<random_engine1_result_type>());
+        generator2.seed(time_point<random_engine2_result_type>());
       }
     }
 
@@ -199,6 +257,8 @@ namespace prime_q
     {
       *p_prime = p0;
     }
+
+    return result_total_is_ok;
   }
 } // namespace prime_q
 
@@ -207,7 +267,7 @@ auto main() -> int;
 auto main() -> int
 {
   using random_engine1_type = ::std::linear_congruential_engine<::std::uint32_t, UINT32_C(48271), UINT32_C(0), UINT32_C(2147483647)>;
-  using random_engine2_type = ::std::mt19937;
+  using random_engine2_type = ::std::mt19937_64;
 
   random_engine1_type generator1 { prime_q::time_point<typename random_engine1_type::result_type>() };
   random_engine2_type generator2 { prime_q::time_point<typename random_engine2_type::result_type>() };
@@ -227,7 +287,7 @@ auto main() -> int
       (::std::numeric_limits<local_wide_integer_type>::max)()
     };
 
-  using local_mathematica_mathlink_type = mathematica::mathematica_mathlink<prime_q::independent_test_system_mathlink_location>;
+  using prime_q::local_mathematica_mathlink_type;
 
   local_mathematica_mathlink_type mlnk { };
 
@@ -241,7 +301,9 @@ auto main() -> int
   {
     local_wide_integer_type prime_candidate { };
 
-    prime_q::get_pseudo_random_prime(dist, generator1, generator2, &prime_candidate);
+    const bool result_get_prime_candidate_is_ok { prime_q::get_pseudo_random_prime(dist, generator1, generator2, &prime_candidate, &mlnk) };
+
+    result_total_is_ok = (result_get_prime_candidate_is_ok && result_total_is_ok);
 
     const ::std::string str_prime_candidate { to_string(prime_candidate) };
 
@@ -260,10 +322,10 @@ auto main() -> int
       {
         static_cast<float>
         (
-            prime_q::trials_total_times100
+            prime_q::trials_total_times1000
           / std::uint32_t { run_index + unsigned { UINT8_C(1) } }
         )
-        / 100.0F
+        / 1000.0F
       };
 
     ::std::string str_report_this_prime { };
@@ -271,10 +333,10 @@ auto main() -> int
     {
       ::std::stringstream strm { };
 
-      strm << "idx: "
+      strm << "trial: "
            << std::setw(std::streamsize { INT8_C(9) })
            << std::right
-           << run_index
+           << (run_index + 1)
            << ", p: "
            << std::setw(std::streamsize { std::numeric_limits<local_wide_integer_type>::digits10 + 1 })
            << std::right

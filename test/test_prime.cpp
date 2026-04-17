@@ -63,18 +63,22 @@ namespace prime_q
     const limb_type hi_limb { prime_candidate.crepresentation().back() };
 
     const ::std::uint8_t
-      hi_nibble
+      has_enough_hi_bits_check
       {
         static_cast<::std::uint8_t>
         (
           static_cast<::std::uint8_t>
           (
             hi_limb >> static_cast<unsigned>(::std::numeric_limits<limb_type>::digits - 4)
-          ) & ::std::uint8_t { UINT8_C(0xF) }
+          ) & ::std::uint8_t { UINT8_C(0xE) }
         )
       };
 
-    if(hi_nibble != ::std::uint8_t { UINT8_C(0) })
+    // Check for non-zero high bits when obtaining the next prime candidate.
+    // This check ensure that the width of the prime candidate remains close
+    // to the maximum of its type.
+
+    if(has_enough_hi_bits_check != ::std::uint8_t { UINT8_C(0) })
     {
       const limb_type lo_limb = prime_candidate.crepresentation().front();
 

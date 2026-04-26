@@ -7,6 +7,10 @@
 
 #define WIDE_INTEGER_NAMESPACE ckormanyos
 
+//#if !defined(ML_USE_SOLOVAY_STRASSEN_PRIME_Q)
+//#define ML_USE_SOLOVAY_STRASSEN_PRIME_Q
+//#endif
+
 #include <mathematica_mathlink/mathematica_mathlink.h>
 #include <math/wide_integer/uintwide_t.h>
 
@@ -15,6 +19,137 @@
 #include <iostream>
 #include <random>
 #include <sstream>
+
+#if defined(ML_USE_SOLOVAY_STRASSEN_PRIME_Q)
+namespace local_solovay_strassen {
+
+namespace detail {
+
+template<typename UnsignedIntegerType>
+auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int;
+
+template<typename UnsignedIntegerType>
+auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
+{
+  // Calculate the integer's Jacobi symbol.
+  if(   ((static_cast<unsigned>(n) == 0U) && (n== 0U))
+     || ((static_cast<unsigned>(n) % 2U) == 0U))
+  {
+    return 0;
+  }
+
+  a %= n;
+
+  int result = 1;
+
+  while(a != 0)
+  {
+    while((static_cast<unsigned>(a) % 2U) == 0U)
+    {
+      a /= 2U;
+
+      UnsignedIntegerType r { n % 8U }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+
+      if(   ((static_cast<unsigned>(r) == 3U) && (r == 3U))  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+         || ((static_cast<unsigned>(r) == 5U) && (r == 5U))) // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      {
+        result = -result;
+      }
+    }
+
+    std::swap(a, n);
+
+    const unsigned a_mod_4 { static_cast<unsigned>(a % 4U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+    const unsigned n_mod_4 { static_cast<unsigned>(n % 4U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+
+    if((a_mod_4 == 3U) && (n_mod_4 == 3U)) // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+    {
+      result = -result;
+    }
+
+    a %= n;
+  }
+
+  const bool n_is_one { ((static_cast<unsigned>(n) == 1) && (n == 1U)) };
+
+  return (n_is_one ? result : 0);
+}
+
+} // namespace detail
+
+template<typename UnsignedIntegerType,
+         typename DistributionType,
+         typename GeneratorType>
+auto solovay_strassen(const UnsignedIntegerType& n, const int iterations, DistributionType& distribution, GeneratorType& generator) -> bool; // NOLINT(readability-avoid-const-params-in-decls)
+
+template<typename UnsignedIntegerType,
+         typename DistributionType,
+         typename GeneratorType>
+auto solovay_strassen(const UnsignedIntegerType& n, const int iterations, DistributionType& distribution, GeneratorType& generator) -> bool // NOLINT(readability-avoid-const-params-in-decls)
+{
+  // Perform a Solovay-Strassen primality test.
+
+  // If this ever goes to production, then testing a lot more semi-small
+  // primes, as done in the library's Miller-Rabin, would make sense here.
+
+  {
+    const unsigned un { static_cast<unsigned>(n) };
+
+    if((un <  2U) && (n <  2)) { return false; }
+    if((un == 2U) && (n == 2)) { return true; }
+    if((un %  2U) == 0U) { return false; }
+  }
+
+  using local_distribution_type = DistributionType;
+
+  using local_wide_integer_type = UnsignedIntegerType;
+
+  using local_param_type = typename DistributionType::param_type;
+
+  const local_param_type
+    params
+    {
+      local_wide_integer_type { unsigned { UINT8_C(2) } },
+      local_wide_integer_type { n - unsigned { UINT8_C(1) } }
+    };
+
+  local_distribution_type dist { params };
+
+  for(int i = 0; i < iterations; ++i)
+  {
+    local_wide_integer_type a { distribution(generator) };
+
+    local_wide_integer_type g = gcd(a, n);
+
+    if((static_cast<unsigned>(g) > 1) && (g > 1U))
+    {
+      return false;
+    }
+
+    const int jac = detail::jacobi(a, n);
+
+    if(jac == 0)
+    {
+      return false;
+    }
+
+    local_wide_integer_type exponent { (n - 1) / 2 };
+    local_wide_integer_type mod_exp { powm(a, exponent, n) };
+
+    local_wide_integer_type jacobian { (jac == -1) ? (n - 1) : jac };
+
+    if(mod_exp != (jacobian % n))
+    {
+      return false;
+    }
+  }
+
+  // The candidate is probably prime.
+  return true;
+}
+
+} // namespace local_solovay_strassen
+#endif // ML_USE_SOLOVAY_STRASSEN_PRIME_Q
 
 namespace prime_q
 {
@@ -174,7 +309,7 @@ namespace prime_q
            typename RandomEngineType1,
            typename RandomEngineType2,
            typename UnsignedIntegralType>
-  auto get_pseudo_random_prime(DistributionType& dist,
+  auto get_pseudo_random_prime(DistributionType& dist1,
                                RandomEngineType1& generator1,
                                RandomEngineType2& generator2,
                                UnsignedIntegralType* p_prime,
@@ -184,11 +319,11 @@ namespace prime_q
 
     local_wide_integer_type p0 { };
 
-    bool result_total_is_ok {true };
+    bool result_total_is_ok { true };
 
     for(;;)
     {
-      while(!set_prime_candidate(generator1, dist, p0)) { ; }
+      while(!set_prime_candidate(generator1, dist1, p0)) { ; }
 
       #if defined(WIDE_INTEGER_NAMESPACE)
       using local_unsigned_fast_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::unsigned_fast_type;
@@ -196,13 +331,30 @@ namespace prime_q
       using local_unsigned_fast_type = ::math::wide_integer::unsigned_fast_type;
       #endif
 
+      #if defined(ML_USE_SOLOVAY_STRASSEN_PRIME_Q)
+      constexpr local_unsigned_fast_type number_of_trials { UINT8_C(56) };
+      #else
+      constexpr local_unsigned_fast_type number_of_trials { UINT8_C(25) };
+      #endif
+
+      using local_distribution_type = DistributionType;
+
+      local_distribution_type dist2 { local_wide_integer_type { 2U }, p0 - 1 };
+
       const bool
         result_candidate_is_prime
         {
-          miller_rabin(p0,
-                       local_unsigned_fast_type { UINT8_C(25) },
-                       dist,
-                       generator2)
+          #if defined(ML_USE_SOLOVAY_STRASSEN_PRIME_Q)
+          local_solovay_strassen::solovay_strassen
+          #else
+          miller_rabin
+          #endif
+          (
+            p0,
+            number_of_trials,
+            dist2,
+            generator2
+          )
         };
 
       if(result_candidate_is_prime)
@@ -284,11 +436,18 @@ auto main() -> int
   using local_distribution_type = ::math::wide_integer::uniform_int_distribution<local_wide_integer_type::my_width2, typename local_wide_integer_type::limb_type>;
   #endif
 
+  // Select prime candidates from a range of 10^60 ... max(uint256_t) - 1.
+  constexpr local_wide_integer_type
+    dist_min
+    {
+      "1000000000000000000000000000000000000000000000000000000000000"
+    };
+
   local_distribution_type
     dist
     {
-      (::std::numeric_limits<local_wide_integer_type>::min)(),
-      (::std::numeric_limits<local_wide_integer_type>::max)()
+      dist_min,
+      (::std::numeric_limits<local_wide_integer_type>::max)() - 1
     };
 
   using prime_q::local_mathematica_mathlink_type;
@@ -297,7 +456,7 @@ auto main() -> int
 
   bool result_total_is_ok { true };
 
-  constexpr ::std::uint32_t max_index { ::std::uint32_t { UINT32_C(0x10000) } };
+  constexpr ::std::uint32_t max_index { ::std::uint32_t { UINT32_C(0x80000) } };
 
   ::std::uint32_t run_index { ::std::uint32_t { UINT32_C(0) } };
 
@@ -345,15 +504,7 @@ auto main() -> int
            << std::setw(std::streamsize { std::numeric_limits<local_wide_integer_type>::digits10 + 1 })
            << std::right
            << str_prime_candidate
-           ;
-
-      str_report_this_prime = strm.str();
-    }
-
-    {
-      ::std::stringstream strm { };
-
-      strm << ", prime? "
+           << ", prime? "
            << ::std::boolalpha
            << result_prime_candidate_is_ok
            << ", pi': "
@@ -362,7 +513,7 @@ auto main() -> int
            << ratio
            ;
 
-      str_report_this_prime += strm.str();
+      str_report_this_prime = strm.str();
     }
 
     ::std::cout << str_report_this_prime << ::std::endl;

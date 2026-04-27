@@ -7,12 +7,12 @@
 
 #define WIDE_INTEGER_NAMESPACE ckormanyos
 
-//#if !defined(ML_USE_SOLOVAY_STRASSEN_PRIME_Q)
-//#define ML_USE_SOLOVAY_STRASSEN_PRIME_Q
-//#endif
+#if !defined(ML_USE_SOLOVAY_STRASSEN_PRIME_Q)
+#define ML_USE_SOLOVAY_STRASSEN_PRIME_Q
+#endif
 
-#include <mathematica_mathlink/mathematica_mathlink.h>
 #include <math/wide_integer/uintwide_t.h>
+#include <mathematica_mathlink/mathematica_mathlink.h>
 
 #include <chrono>
 #include <iomanip>
@@ -32,11 +32,14 @@ template<typename UnsignedIntegerType>
 auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
 {
   // Calculate the integer's Jacobi symbol.
-  if(   ((static_cast<unsigned>(n) == 0U) && (n== 0U))
-     || ((static_cast<unsigned>(n) % 2U) == 0U))
+
+  // LCOV_EXCL_START
+  if(   ((static_cast<std::uint_fast8_t>(n) == 0U) && (n== 0U))
+     || ((static_cast<std::uint_fast8_t>(n) % 2U) == 0U))
   {
     return 0;
   }
+  // LCOV_EXCL_STOP
 
   a %= n;
 
@@ -44,14 +47,14 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
 
   while(a != 0)
   {
-    while((static_cast<unsigned>(a) % 2U) == 0U)
+    while((static_cast<std::uint_fast8_t>(a) % 2U) == 0U)
     {
       a /= 2U;
 
       UnsignedIntegerType r { n % 8U }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
-      if(   ((static_cast<unsigned>(r) == 3U) && (r == 3U))  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-         || ((static_cast<unsigned>(r) == 5U) && (r == 5U))) // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      if(   ((static_cast<std::uint_fast8_t>(r) == 3U) && (r == 3U))  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+         || ((static_cast<std::uint_fast8_t>(r) == 5U) && (r == 5U))) // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
       {
         result = -result;
       }
@@ -59,8 +62,8 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
 
     std::swap(a, n);
 
-    const unsigned a_mod_4 { static_cast<unsigned>(a % 4U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-    const unsigned n_mod_4 { static_cast<unsigned>(n % 4U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+    const unsigned a_mod_4 { static_cast<std::uint_fast8_t>(a % 4U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+    const unsigned n_mod_4 { static_cast<std::uint_fast8_t>(n % 4U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
     if((a_mod_4 == 3U) && (n_mod_4 == 3U)) // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     {
@@ -70,7 +73,7 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
     a %= n;
   }
 
-  const bool n_is_one { ((static_cast<unsigned>(n) == 1) && (n == 1U)) };
+  const bool n_is_one { ((static_cast<std::uint_fast8_t>(n) == 1U) && (n == 1U)) };
 
   return (n_is_one ? result : 0);
 }
@@ -93,27 +96,14 @@ auto solovay_strassen(const UnsignedIntegerType& n, const int iterations, Distri
   // primes, as done in the library's Miller-Rabin, would make sense here.
 
   {
-    const unsigned un { static_cast<unsigned>(n) };
+    const unsigned un { static_cast<std::uint_fast8_t>(n) };
 
-    if((un <  2U) && (n <  2)) { return false; }
-    if((un == 2U) && (n == 2)) { return true; }
+    if((un <  2U) && (n <  2U)) { return false; }
+    if((un == 2U) && (n == 2U)) { return true; }
     if((un %  2U) == 0U) { return false; }
   }
 
-  using local_distribution_type = DistributionType;
-
   using local_wide_integer_type = UnsignedIntegerType;
-
-  using local_param_type = typename DistributionType::param_type;
-
-  const local_param_type
-    params
-    {
-      local_wide_integer_type { unsigned { UINT8_C(2) } },
-      local_wide_integer_type { n - unsigned { UINT8_C(1) } }
-    };
-
-  local_distribution_type dist { params };
 
   for(int i = 0; i < iterations; ++i)
   {
@@ -121,7 +111,7 @@ auto solovay_strassen(const UnsignedIntegerType& n, const int iterations, Distri
 
     local_wide_integer_type g = gcd(a, n);
 
-    if((static_cast<unsigned>(g) > 1) && (g > 1U))
+    if((static_cast<std::uint_fast8_t>(g) > 1U) && (g > 1U))
     {
       return false;
     }
@@ -133,10 +123,10 @@ auto solovay_strassen(const UnsignedIntegerType& n, const int iterations, Distri
       return false;
     }
 
-    local_wide_integer_type exponent { (n - 1) / 2 };
-    local_wide_integer_type mod_exp { powm(a, exponent, n) };
+    const local_wide_integer_type exponent { (n - 1) / 2 };
+    const local_wide_integer_type mod_exp { powm(a, exponent, n) };
 
-    local_wide_integer_type jacobian { (jac == -1) ? (n - 1) : jac };
+    const local_wide_integer_type jacobian { (jac == -1) ? (n - 1) : jac };
 
     if(mod_exp != (jacobian % n))
     {
@@ -204,8 +194,9 @@ namespace prime_q
         (
           static_cast<::std::uint8_t>
           (
-            hi_limb >> static_cast<unsigned>(::std::numeric_limits<limb_type>::digits - 4)
-          ) & ::std::uint8_t { UINT8_C(0xE) }
+              (hi_limb >> static_cast<unsigned>(::std::numeric_limits<limb_type>::digits - 4))
+            & ::std::uint8_t { UINT8_C(0xE) }
+          )
         )
       };
 
@@ -339,7 +330,7 @@ namespace prime_q
 
       using local_distribution_type = DistributionType;
 
-      local_distribution_type dist2 { local_wide_integer_type { 2U }, p0 - 1 };
+      local_distribution_type dist2 { local_wide_integer_type { 2U }, p0 - 1U };
 
       const bool
         result_candidate_is_prime

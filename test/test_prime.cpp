@@ -34,10 +34,13 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
   // Calculate the integer's Jacobi symbol.
 
   // LCOV_EXCL_START
-  if(   ((static_cast<std::uint_fast8_t>(n) == 0U) && (n== 0U))
-     || ((static_cast<std::uint_fast8_t>(n) % 2U) == 0U))
   {
-    return 0;
+    const std::uint_fast8_t un { static_cast<std::uint_fast8_t>(n) };
+
+    if(((un == 0U) && (n== 0U)) || ((un % 2U) == 0U))
+    {
+      return 0;
+    }
   }
   // LCOV_EXCL_STOP
 
@@ -51,10 +54,9 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
     {
       a /= 2U;
 
-      UnsignedIntegerType r { n % 8U }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      const std::uint_fast8_t ur { static_cast<std::uint_fast8_t>(n % 8U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
-      if(   ((static_cast<std::uint_fast8_t>(r) == 3U) && (r == 3U))  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-         || ((static_cast<std::uint_fast8_t>(r) == 5U) && (r == 5U))) // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      if((ur == 3U) || (ur == 5U)) // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
       {
         result = -result;
       }

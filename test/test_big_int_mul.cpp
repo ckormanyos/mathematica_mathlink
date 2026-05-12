@@ -101,8 +101,8 @@ inline constexpr std::size_t
 std::uniform_int_distribution
   distribution_bits_length
   {
-    std::size_t{700U} * static_cast<std::size_t>(limb_bits),
-    std::size_t{900U} * static_cast<std::size_t>(limb_bits)
+    std::size_t{12000U} * static_cast<std::size_t>(limb_bits),
+    std::size_t{14000U} * static_cast<std::size_t>(limb_bits)
   };
 
 auto get_hex_string_pair() -> std::pair<std::string, std::string>;
@@ -131,6 +131,24 @@ auto get_hex_string_pair() -> std::pair<std::string, std::string>
 
 } // namespace detail
 
+using integral_type = beman::big_int::big_int;
+
+auto to_hex_string(integral_type value_to_convert) -> std::string {
+    // Calculate the hex-expected string length and also align to 16.
+    const std::size_t buf_size{(((value_to_convert.size() + 4U) / 4U) / 16U + 1U) * 16U};
+
+    std::string result(buf_size, '\0');
+
+    // big_int supports to_chars, found in this example by ADL.
+    const auto [ptr, ec]{to_chars(result.data(), result.data() + result.size(), value_to_convert, 16)};
+
+    static_cast<void>(ec);
+
+    result.resize(static_cast<std::string::size_type>(std::distance(result.data(), ptr)));
+
+    return result;
+}
+
 // Use the default mathlink 12.1 kernel location on Win*.
 constexpr char independent_test_system_mathlink_location[]
 {
@@ -138,8 +156,6 @@ constexpr char independent_test_system_mathlink_location[]
 };
 
 using mathematica_mathlink_type = mathematica::mathematica_mathlink<independent_test_system_mathlink_location>;
-
-using integral_type = beman::big_int::big_int;
 
 } // namespace local
 
@@ -149,12 +165,12 @@ auto main() -> int
 
   auto result_total_is_ok = true;
 
-  constexpr auto max_index = static_cast<std::uint32_t>(UINT32_C(131072));
-            auto run_index = static_cast<std::uint32_t>(UINT32_C(0));
+  constexpr auto max_trial = static_cast<std::uint32_t>(UINT32_C(131072));
+            auto trial = static_cast<std::uint32_t>(UINT32_C(0));
 
   std::uint64_t elapsed_total_muls { };
 
-  for( ; ((run_index < max_index) && result_total_is_ok); ++run_index)
+  for( ; ((trial < max_trial) && result_total_is_ok); ++trial)
   {
     const local::detail::str_pair_type str_pair { local::detail::get_hex_string_pair() };
 
@@ -169,45 +185,62 @@ auto main() -> int
     static_cast<void>(fc_result_a);
     static_cast<void>(fc_result_b);
 
-    // 87727206311238137505326963407487099090735132557053*273791746447195436717
+    // Sample command line for Mathematica
+    // IntegerString[FromDigits["1A3FBCD", 16]*FromDigits["2B12345EFC", 16], 16]
 
-    const std::string str_cmd_mul { to_string(bn_a) + "*" + to_string(bn_b) };
+    std::string
+      str_cmd_mul
+      {
+          "IntegerString[FromDigits[\""
+        + str_pair.first
+        + "\", 16]*FromDigits[\""
+        + str_pair.second
+        + "\", 16], 16]"
+      };
 
     std::string str_rsp_mul { };
 
     mlnk.send_command(str_cmd_mul, &str_rsp_mul);
 
-    const auto start { std::chrono::high_resolution_clock::now() };
+    {
+      const auto start { std::chrono::high_resolution_clock::now() };
 
-    const local::integral_type mul_result = bn_a * bn_b;
+      const local::integral_type mul_result = bn_a * bn_b;
 
-    const auto stop { std::chrono::high_resolution_clock::now() };
+      const auto stop { std::chrono::high_resolution_clock::now() };
 
-    const auto elapsed_one_mul { std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count() };
+      const auto elapsed_one_mul { std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count() };
 
-    elapsed_total_muls = elapsed_total_muls + static_cast<std::uint64_t>(elapsed_one_mul);
+      elapsed_total_muls = elapsed_total_muls + static_cast<std::uint64_t>(elapsed_one_mul);
 
-    const bool result_mul_is_ok { (str_rsp_mul  == to_string(mul_result)) };
+      const bool result_mul_is_ok { (str_rsp_mul  == local::to_hex_string(mul_result)) };
 
-    result_total_is_ok = (result_mul_is_ok && result_total_is_ok);
+      result_total_is_ok = (result_mul_is_ok && result_total_is_ok);
+    }
 
     {
-      if((run_index > 0U) && ((run_index % 32U) == UINT32_C(0)))
+      if((trial > 0U) && ((trial % 32U) == UINT32_C(0)))
       {
-        const double average_mul_time_us = (static_cast<double>(elapsed_total_muls) / static_cast<double>(run_index)) / 1000.0;
+        const double average_mul_time_us = (static_cast<double>(elapsed_total_muls) / static_cast<double>(trial)) / 1000.0;
 
-        std::cout << "run_index: " << run_index << ", average_mul_time_us: " << std::setprecision(1) << std::fixed << average_mul_time_us << std::endl;
+        {
+          std::stringstream strm { };
+
+          strm << "trial: " << trial << ", average_mul_time_us: " << std::setprecision(1) << std::fixed << average_mul_time_us;
+
+          std::cout << strm.str() << std::endl;
+        }
       }
     }
   }
 
-  result_total_is_ok = ((run_index == max_index) && result_total_is_ok);
+  result_total_is_ok = ((trial == max_trial) && result_total_is_ok);
 
   {
     std::stringstream strm;
 
     strm << '\n';
-    strm << "Summary                            : " << run_index      << " trials"           << '\n';
+    strm << "Summary                            : " << trial      << " trial"           << '\n';
     strm << "result_total_is_ok                 : " << std::boolalpha << result_total_is_ok  << '\n';
 
     std::cout << strm.str() << std::endl;

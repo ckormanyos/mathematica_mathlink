@@ -45,6 +45,9 @@
     <ClCompile Include="test\test_gcd.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="test\test_big_int_mul.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mathematica_mathlink\mathematica_mathlink.h">

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#  Copyright Christopher Kormanyos 2023 - 2025.
+#  Copyright Christopher Kormanyos 2023 - 2026.
 #  Distributed under the Boost Software License,
 #  Version 1.0. (See accompanying file LICENSE_1_0.txt
 #  or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -24,7 +24,7 @@ jobs:
         compiler: [ g++, clang++ ]
         test: [ test_bessel_j_versus_boost ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: '0'
       - name: clone-submods-bootstrap-headers-boost-develop
@@ -58,7 +58,7 @@ jobs:
         compiler: [ g++, clang++ ]
         test: [ test_divmod, test_gcd, test_prime ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: '0'
       - name: clone-wide-integer-master
@@ -70,6 +70,32 @@ jobs:
           echo "compile ./${{ matrix.test }}"
           ${{ matrix.compiler }} -v
           ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wundef -Wunused-parameter -Wuninitialized -Wunreachable-code -Winit-self -Wzero-as-null-pointer-constant -std=${{ matrix.standard }} -c -I. -I../wide-integer-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          echo "ls -la ./${{ matrix.test }}.o"
+          ls -la ./${{ matrix.test }}.o
+  gcc-clang-native-std-big-int-mul:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        standard: [ c++23 ]
+        compiler: [ g++, clang++ ]
+        test: [ test_big_int_mul ]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: '0'
+      - name: clone-wide-integer-master
+        run: |
+          git clone -b main --depth 1 https://github.com/eisenwave/std-big-int.git ../std-big-int-root
+      - name: gcc-clang-native
+        run: |
+          ${{ matrix.compiler }} -v
+          echo "compile ./${{ matrix.test }}"
+          ${{ matrix.compiler }} -v
+          ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../std-big-int-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o
   gcc-clang-native-alt-prime-q:
@@ -84,7 +110,7 @@ jobs:
         compiler: [ g++, clang++ ]
         test: [ test_prime ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: '0'
       - name: clone-wide-integer-master

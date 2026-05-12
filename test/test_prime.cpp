@@ -37,6 +37,9 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
   {
     const std::uint_fast8_t un { static_cast<std::uint_fast8_t>(n) };
 
+    // Is the prime candidate equal to zero or an even integer?
+    // If so, then it is not prime (false).
+
     if(((un == 0U) && (n== 0U)) || ((un % 2U) == 0U))
     {
       return 0;

@@ -113,7 +113,6 @@ auto get_hex_string_pair() -> std::pair<std::string, std::string>
   std::size_t len_b_in_bits{};
 
   static unsigned seed_prescalar{};
-  static unsigned seed_increment{};
 
   // On a pre-defined schedule, seed the random length generator with fixed values.
   if((++seed_prescalar % 128U) == 0U)
@@ -186,7 +185,7 @@ auto main() -> int
 
     const auto elapsed_one_mul { std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count() };
 
-    elapsed_total_muls += elapsed_one_mul;
+    elapsed_total_muls = elapsed_total_muls + static_cast<std::uint64_t>(elapsed_one_mul);
 
     const bool result_mul_is_ok { (str_rsp_mul  == to_string(mul_result)) };
 

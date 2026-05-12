@@ -26,11 +26,11 @@ Several completely worked out test examples are available in the
   - [test_divmod.cpp](./test/test_divmod.cpp) generates pseudo-random wide integers and tests the `divmod` function versus the kernel. This function is equivalent to Python-3's double-divide (`//`) function or Mathematica(R)'s `QuotientRemainder` function. This test program requires the [ckormanyos/wide-integer](https://github.com/ckormanyos/wide-integer) header-only C++ _wide_-_integer_ library.
   - [test_gcd.cpp](./test/test_gcd.cpp) generates pairs of pseudo-random wide-integers, computes their `gcd` (GCD, greatest common divisor) and confirms the GCD results with the kernel. This test program requires the [ckormanyos/wide-integer](https://github.com/ckormanyos/wide-integer) header-only C++ _wide_-_integer_ library.
   - [test_prime.cpp](./test/test_prime.cpp) generates pseudo-random wide-integer prime numbers and verifies their primality with the kernel. The non-primality of (the many more) non-prime random candidates is also verified with the kernel. This test program requires the [ckormanyos/wide-integer](https://github.com/ckormanyos/wide-integer) header-only C++ _wide_-_integer_ library.
-  - [test_big_int_mul.cpp](./test/test_big_int_mul.cpp) generates very large pseudo-random `big_int`s and verifies numerical multiplication correctness in the Toom-Cook region. The [eisenwave/std-big-int](https://github.com/eisenwave/std-big-int) header-only C++ _big_-_integer_ library ised in this example.
+  - [test_big_int_mul.cpp](./test/test_big_int_mul.cpp) generates very large pseudo-random `big_int`s and verifies numerical multiplication correctness in the Toom-Cook region. The [eisenwave/std-big-int](https://github.com/eisenwave/std-big-int) header-only C++ _big_-_integer_ library is used in this example. This example requires a minimum language standard of C++23.
 
 ## Additional information
 
   - At the moment, `ckormanyos/mathematica_mathlink` can only handle single return packets.
   - The path strings for finding/locating the Mathematica(R) kernel are only available for `Win*`, not for `*nix`.
   - Link with `wstp64i4.lib` and run in the presence of `wstp64i4.dll` (which are proprietary libraries).
-  - CI compiles the test examples to object only (and does not link). Compilation is checked using GCC and clang compilers.
+  - CI compiles the test examples to object only, but purposely does not not link. Compilation is checked using GCC and clang compilers.

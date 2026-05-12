@@ -26,6 +26,7 @@ Several completely worked out test examples are available in the
   - [test_divmod.cpp](./test/test_divmod.cpp) generates pseudo-random wide integers and tests the `divmod` function versus the kernel. This function is equivalent to Python-3's double-divide (`//`) function or Mathematica(R)'s `QuotientRemainder` function. This test program requires the [ckormanyos/wide-integer](https://github.com/ckormanyos/wide-integer) header-only C++ _wide_-_integer_ library.
   - [test_gcd.cpp](./test/test_gcd.cpp) generates pairs of pseudo-random wide-integers, computes their `gcd` (GCD, greatest common divisor) and confirms the GCD results with the kernel. This test program requires the [ckormanyos/wide-integer](https://github.com/ckormanyos/wide-integer) header-only C++ _wide_-_integer_ library.
   - [test_prime.cpp](./test/test_prime.cpp) generates pseudo-random wide-integer prime numbers and verifies their primality with the kernel. The non-primality of (the many more) non-prime random candidates is also verified with the kernel. This test program requires the [ckormanyos/wide-integer](https://github.com/ckormanyos/wide-integer) header-only C++ _wide_-_integer_ library.
+  - [test_big_int_mul.cpp](./test/test_big_int_mul.cpp) generates very large pseudo-random `big_int`s and verifies numerical multiplication correctness in the Toom-Cook region. The [eisenwave/std-big-int](https://github.com/eisenwave/std-big-int) header-only C++ _big_-_integer_ library ised in this example.
 
 ## Additional information
 

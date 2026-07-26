@@ -122,6 +122,7 @@ jobs:
           git submodule update --init libs/math
           git submodule update --init libs/integer
           git submodule update --init libs/random
+          git submodule update --init libs/type_traits
           ./bootstrap.sh
           ./b2 headers
       - name: clone-int128-develop

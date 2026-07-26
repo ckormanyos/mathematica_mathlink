@@ -333,8 +333,6 @@ namespace prime_q
     {
       while(!set_prime_candidate(generator1, dist1, p0)) { ; }
 
-      using local_unsigned_fast_type = unsigned;
-
       constexpr unsigned number_of_trials { UINT8_C(56) };
 
       using local_distribution_type = DistributionType;

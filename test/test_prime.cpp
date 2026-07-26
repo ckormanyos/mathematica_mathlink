@@ -35,7 +35,7 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
 
   // LCOV_EXCL_START
   {
-    const std::uint_fast8_t un { static_cast<std::uint_fast8_t>(n) };
+    const ::std::uint_fast8_t un { static_cast<std::uint_fast8_t>(n) };
 
     // Is the prime candidate equal to zero or an even integer?
     // If so, then it is not prime (false).
@@ -57,7 +57,7 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
     {
       a /= 2U;
 
-      const std::uint_fast8_t ur { static_cast<std::uint_fast8_t>(n % 8U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      const ::std::uint_fast8_t ur { static_cast<std::uint_fast8_t>(n % 8U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
       if((ur == 3U) || (ur == 5U)) // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
       {
@@ -65,7 +65,7 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
       }
     }
 
-    std::swap(a, n);
+    ::std::swap(a, n);
 
     const unsigned a_mod_4 { static_cast<std::uint_fast8_t>(a % 4U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     const unsigned n_mod_4 { static_cast<std::uint_fast8_t>(n % 4U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
@@ -273,7 +273,7 @@ namespace prime_q
             result_set_n_is_ok = true;
 
             // Increment the trials-times-1000 counter by one new trial (add 1,000).
-            trials_total_times1000 = std::uint64_t { trials_total_times1000 + unsigned { UINT16_C(1000) } };
+            trials_total_times1000 = ::std::uint64_t { trials_total_times1000 + unsigned { UINT16_C(1000) } };
           }
         }
       }
@@ -382,7 +382,7 @@ namespace prime_q
                       << p0
                       << "\nML disagrees with non-prime (the response was !False), and thus it is prime."
                       << "\nBut wide_integer did not properly identify the candidate to be prime.\n"
-                      << std::endl;
+                      << ::std::endl;
 
           break;
         }
@@ -482,7 +482,7 @@ auto main() -> int
         static_cast<float>
         (
             prime_q::trials_total_times1000
-          / std::uint32_t { run_index + unsigned { UINT8_C(1) } }
+          / ::std::uint32_t { run_index + unsigned { UINT8_C(1) } }
         )
         / 1000.0F
       };
@@ -493,19 +493,19 @@ auto main() -> int
       ::std::stringstream strm { };
 
       strm << "trial: "
-           << std::setw(std::streamsize { INT8_C(9) })
-           << std::right
+           << ::std::setw(std::streamsize { INT8_C(9) })
+           << ::std::right
            << (run_index + 1)
            << ", p: "
-           << std::setw(std::streamsize { std::numeric_limits<local_wide_integer_type>::digits10 + 1 })
-           << std::right
+           << ::std::setw(std::streamsize { ::std::numeric_limits<local_wide_integer_type>::digits10 + 1 })
+           << ::std::right
            << str_prime_candidate
            << ", prime? "
            << ::std::boolalpha
            << result_prime_candidate_is_ok
            << ", pi': "
-           << std::fixed
-           << std::setprecision(2)
+           << ::std::fixed
+           << ::std::setprecision(2)
            << ratio
            ;
 

@@ -23,6 +23,8 @@ namespace local_solovay_strassen {
 
 namespace detail {
 
+constexpr int number_of_trials { INT8_C(56) };
+
 template<typename UnsignedIntegerType>
 auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int;
 
@@ -32,32 +34,30 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
   // Calculate the integer's Jacobi symbol.
 
   // LCOV_EXCL_START
-  {
-    const ::std::uint_fast8_t un { static_cast<std::uint_fast8_t>(n) };
-
     // Is the prime candidate equal to zero or an even integer?
     // If so, then it is not prime (false).
 
-    if(((un == 0U) && (n== 0U)) || ((un % 2U) == 0U))
-    {
-      return 0;
-    }
+  if(   ((static_cast<std::uint_fast8_t>(n) == 0U) && (n== 0U))
+     || ((static_cast<std::uint_fast8_t>(n) % 2U) == 0U))
+  {
+    return 0;
   }
   // LCOV_EXCL_STOP
 
   a %= n;
 
-  int result = 1;
+  int result { 1 };
 
   while(a != 0)
   {
-    while((static_cast<std::uint_fast8_t>(a) % 2U) == 0U)
+    while((static_cast<::std::uint_fast8_t>(a) % 2U) == 0U)
     {
       a /= 2U;
 
-      const ::std::uint_fast8_t ur { static_cast<std::uint_fast8_t>(n % 8U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      const ::std::uint_fast8_t r { static_cast<::std::uint_fast8_t>(n % 8U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
-      if((ur == 3U) || (ur == 5U)) // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      if(   ((static_cast<::std::uint_fast8_t>(r) == 3U) && (r == 3U))  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+         || ((static_cast<::std::uint_fast8_t>(r) == 5U) && (r == 5U))) // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
       {
         result = -result;
       }
@@ -96,9 +96,12 @@ auto solovay_strassen(const UnsignedIntegerType& n, const int iterations, Distri
   // Perform a Solovay-Strassen primality test.
 
   // If this ever goes to production, then testing a lot more semi-small
-  // primes, as done in the library's Miller-Rabin, would make sense here.
+  // primes, as done in the wide-integer's Miller-Rabin, would make sense here.
 
   {
+    // Is the prime candidate equal to zero or an even integer?
+    // If so, then it is not prime (false).
+
     const unsigned un { static_cast<std::uint_fast8_t>(n) };
 
     if((un <  2U) && (n <  2U)) { return false; }
@@ -429,10 +432,15 @@ auto main() -> int
   using local_distribution_type = boost::random::uniform_int_distribution<local_wide_integer_type>;
 
   // Select prime candidates from high in the value range of the type.
+  // The higher bits in the lower bound of the range are set because
+  // statistics are collected to verify the prime number dsnsity.
+  // For this purpose, it's best to have prime candidates with relatively
+  // close to the widest bit-range of the type.
+
   constexpr local_wide_integer_type
     dist_min
     {
-      BOOST_INT128_UINT128_C(0x80000000'00000000'00000000'00000000)
+      BOOST_INT128_UINT128_C(0xF0000000'00000000'00000000'00000001)
     };
 
   local_distribution_type

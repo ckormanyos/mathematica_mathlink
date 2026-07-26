@@ -6,7 +6,9 @@
 //
 
 #include <mathematica_mathlink/mathematica_mathlink.h>
+
 #include <beman/big_int/big_int.hpp>
+#include <beman/big_int/charconv.hpp>
 
 #include <chrono>
 #include <iomanip>

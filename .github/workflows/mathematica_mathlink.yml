@@ -82,7 +82,7 @@ jobs:
       matrix:
         standard: [ c++23 ]
         compiler: [ g++, clang++ ]
-        test: [ test_big_int_mul ]
+        test: [ test_std_big_int_mul ]
     steps:
       - uses: actions/checkout@v6
         with:

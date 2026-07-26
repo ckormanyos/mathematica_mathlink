@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        standard: [ c++20 ]
+        standard: [ c++23 ]
         compiler: [ g++, clang++ ]
         test: [ test_bessel_j_versus_boost ]
     steps:
@@ -54,7 +54,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        standard: [ c++20 ]
+        standard: [ c++23 ]
         compiler: [ g++, clang++ ]
         test: [ test_divmod, test_gcd, test_prime ]
     steps:
@@ -82,7 +82,7 @@ jobs:
       matrix:
         standard: [ c++23 ]
         compiler: [ g++, clang++ ]
-        test: [ test_big_int_mul ]
+        test: [ test_std_big_int_mul ]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -98,6 +98,45 @@ jobs:
           ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../std-big-int-root/include ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o
+  gcc-clang-native-int128-prime:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        standard: [ c++23 ]
+        compiler: [ g++, clang++ ]
+        test: [ test_prime_int128 ]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: '0'
+      - name: clone-submods-bootstrap-headers-boost-develop
+        run: |
+          git clone -b develop --depth 1 https://github.com/boostorg/boost.git ../boost-root
+          cd ../boost-root
+          git submodule update --init tools
+          git submodule update --init libs/assert
+          git submodule update --init libs/config
+          git submodule update --init libs/math
+          git submodule update --init libs/integer
+          git submodule update --init libs/random
+          git submodule update --init libs/type_traits
+          ./bootstrap.sh
+          ./b2 headers
+      - name: clone-int128-develop
+        run: |
+          git clone -b develop --depth 1 https://github.com/cppalliance/int128.git ../int128-root
+      - name: gcc-clang-native
+        run: |
+          ${{ matrix.compiler }} -v
+          echo "compile ./${{ matrix.test }}"
+          ${{ matrix.compiler }} -v
+          ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../int128-root/include -I../boost-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          echo "ls -la ./${{ matrix.test }}.o"
+          ls -la ./${{ matrix.test }}.o
   gcc-clang-native-alt-prime-q:
     runs-on: ubuntu-latest
     defaults:
@@ -106,7 +145,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        standard: [ c++20 ]
+        standard: [ c++23 ]
         compiler: [ g++, clang++ ]
         test: [ test_prime ]
     steps:

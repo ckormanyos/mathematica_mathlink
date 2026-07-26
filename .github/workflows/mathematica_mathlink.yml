@@ -113,6 +113,17 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: '0'
+      - name: clone-submods-bootstrap-headers-boost-develop
+        run: |
+          git clone -b develop --depth 1 https://github.com/boostorg/boost.git ../boost-root
+          cd ../boost-root
+          git submodule update --init tools
+          git submodule update --init libs/config
+          git submodule update --init libs/math
+          git submodule update --init libs/integer
+          git submodule update --init libs/random
+          ./bootstrap.sh
+          ./b2 headers
       - name: clone-int128-develop
         run: |
           git clone -b develop --depth 1 https://github.com/cppalliance/int128.git ../int128-root
@@ -121,7 +132,7 @@ jobs:
           ${{ matrix.compiler }} -v
           echo "compile ./${{ matrix.test }}"
           ${{ matrix.compiler }} -v
-          ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../int128-root/include ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../int128-root/include -I../boost-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o
   gcc-clang-native-alt-prime-q:

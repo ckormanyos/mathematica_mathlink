@@ -23,8 +23,6 @@ namespace local_solovay_strassen {
 
 namespace detail {
 
-constexpr int number_of_trials { INT8_C(56) };
-
 template<typename UnsignedIntegerType>
 auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int;
 

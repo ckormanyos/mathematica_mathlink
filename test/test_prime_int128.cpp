@@ -35,16 +35,10 @@ public:
   {
     const result_type
       rnd_result
-      {
-        {
-            std::uint64_t { input_generator() } << 32U
-          | std::uint64_t { input_generator() }
-        },
-        {
-            std::uint64_t { input_generator() } << 32U
-          | std::uint64_t { input_generator() }
-        }
-      };
+      (
+        std::uint64_t { (std::uint64_t { input_generator() } << 32U) | std::uint64_t { input_generator() } },
+        std::uint64_t { (std::uint64_t { input_generator() } << 32U) | std::uint64_t { input_generator() } }
+      );
 
     return set_in_range(rnd_result);
   }

@@ -43,7 +43,7 @@ jobs:
           grep BOOST_VERSION ../boost-root/boost/version.hpp
           echo "compile ./${{ matrix.test }}"
           ${{ matrix.compiler }} -v
-          ${{ matrix.compiler }} -finline-functions -march=native -O3 -Werror -Wall -Wextra -Wpedantic -std=${{ matrix.standard }} -c -I. -I../boost-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          ${{ matrix.compiler }} -finline-functions -O3 -Werror -Wall -Wextra -Wpedantic -std=${{ matrix.standard }} -c -I. -I../boost-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o
   gcc-clang-native-with-wide-integer:
@@ -69,7 +69,7 @@ jobs:
           ${{ matrix.compiler }} -v
           echo "compile ./${{ matrix.test }}"
           ${{ matrix.compiler }} -v
-          ${{ matrix.compiler }} -finline-functions -march=native -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wundef -Wunused-parameter -Wuninitialized -Wunreachable-code -Winit-self -Wzero-as-null-pointer-constant -std=${{ matrix.standard }} -c -I. -I../wide-integer-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          ${{ matrix.compiler }} -finline-functions -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wundef -Wunused-parameter -Wuninitialized -Wunreachable-code -Winit-self -Wzero-as-null-pointer-constant -std=${{ matrix.standard }} -c -I. -I../wide-integer-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o
   gcc-clang-native-std-big-int-mul:
@@ -95,7 +95,7 @@ jobs:
           ${{ matrix.compiler }} -v
           echo "compile ./${{ matrix.test }}"
           ${{ matrix.compiler }} -v
-          ${{ matrix.compiler }} -finline-functions -march=native -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../std-big-int-root/include ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          ${{ matrix.compiler }} -finline-functions -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../std-big-int-root/include ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o
   gcc-clang-native-int128-prime:
@@ -121,7 +121,7 @@ jobs:
           ${{ matrix.compiler }} -v
           echo "compile ./${{ matrix.test }}"
           ${{ matrix.compiler }} -v
-          ${{ matrix.compiler }} -finline-functions -march=native -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../int128-root/include ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          ${{ matrix.compiler }} -finline-functions -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../int128-root/include ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o
   gcc-clang-native-alt-prime-q:
@@ -147,6 +147,6 @@ jobs:
           ${{ matrix.compiler }} -v
           echo "compile ./${{ matrix.test }}"
           ${{ matrix.compiler }} -v
-          ${{ matrix.compiler }} -finline-functions -march=native -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wundef -Wunused-parameter -Wuninitialized -Wunreachable-code -Winit-self -Wzero-as-null-pointer-constant -std=${{ matrix.standard }} -c -DML_USE_SOLOVAY_STRASSEN_PRIME_Q -I. -I../wide-integer-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          ${{ matrix.compiler }} -finline-functions -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wundef -Wunused-parameter -Wuninitialized -Wunreachable-code -Winit-self -Wzero-as-null-pointer-constant -std=${{ matrix.standard }} -c -DML_USE_SOLOVAY_STRASSEN_PRIME_Q -I. -I../wide-integer-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o

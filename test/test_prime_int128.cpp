@@ -8,16 +8,67 @@
 #include <mathematica_mathlink/mathematica_mathlink.h>
 
 #include <boost/int128.hpp>
-#include <boost/int128/random.hpp>
-
-#include <boost/math/statistics/univariate_statistics.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
 
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <random>
 #include <sstream>
+#include <type_traits>
+
+namespace {
+
+class boost_int128_uniform_int_distribution
+{
+public:
+  using result_type = boost::int128::uint128;
+
+  explicit boost_int128_uniform_int_distribution(const result_type& p_a,
+                                                 const result_type& p_b)
+    : param_a  { p_a },
+      param_b  { p_b },
+      my_range { (p_b - p_a) + 1 } { }
+
+  template<typename GeneratorType>
+  auto operator()(GeneratorType& input_generator) const -> std::enable_if_t<std::numeric_limits<typename GeneratorType::result_type>::digits == 32, result_type>
+  {
+    const result_type
+      rnd_result
+      {
+        {
+            std::uint64_t { input_generator() } << 32U
+          | std::uint64_t { input_generator() }
+        },
+        {
+            std::uint64_t { input_generator() } << 32U
+          | std::uint64_t { input_generator() }
+        }
+      };
+
+    return set_in_range(rnd_result);
+  }
+
+  template<typename GeneratorType>
+  auto operator()(GeneratorType& input_generator) const -> std::enable_if_t<std::numeric_limits<typename GeneratorType::result_type>::digits == 64, result_type>
+  {
+    const result_type rnd_result { input_generator(), input_generator() };
+
+    return set_in_range(rnd_result);
+  }
+
+private:
+  const result_type param_a;
+  const result_type param_b;
+  const result_type my_range;
+
+  auto set_in_range(const result_type& rnd_result) const -> result_type
+  {
+    return (rnd_result % my_range) + param_a;
+  }
+};
+
+} // anonymous namespace
 
 namespace local_solovay_strassen {
 
@@ -84,27 +135,115 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
 template<typename UnsignedIntegerType,
          typename DistributionType,
          typename GeneratorType>
-auto solovay_strassen(const UnsignedIntegerType& n, const int iterations, DistributionType& distribution, GeneratorType& generator) -> bool; // NOLINT(readability-avoid-const-params-in-decls)
+auto solovay_strassen(const UnsignedIntegerType& np, const int iterations, DistributionType& distribution, GeneratorType& generator) -> bool; // NOLINT(readability-avoid-const-params-in-decls)
 
 template<typename UnsignedIntegerType,
          typename DistributionType,
          typename GeneratorType>
-auto solovay_strassen(const UnsignedIntegerType& n, const int iterations, DistributionType& distribution, GeneratorType& generator) -> bool // NOLINT(readability-avoid-const-params-in-decls)
+auto solovay_strassen(const UnsignedIntegerType& np, const int iterations, DistributionType& distribution, GeneratorType& generator) -> bool // NOLINT(readability-avoid-const-params-in-decls)
 {
+  using local_limb_type = std::uint64_t;
+
   // Perform a Solovay-Strassen primality test.
 
-  // If this ever goes to production, then testing a lot more semi-small
-  // primes, as done in the wide-integer's Miller-Rabin, would make sense here.
+  // Table[Prime[i], {i, 2, 49, 1}] =
+  // {
+  //     3,   5,   7,  11,  13,  17,  19,  23,
+  //    29,  31,  37,  41,  43,  47,  53,  59,
+  //    61,  67,  71,  73,  79,  83,  89,  97,
+  //   101, 103, 107, 109, 113, 127, 131, 137,
+  //   139, 149, 151, 157, 163, 167, 173, 179,
+  //   181, 191, 193, 197, 199, 211, 223, 227
+  // }
+  // See also:
+  // https://www.wolframalpha.com/input/?i=Table%5BPrime%5Bi%5D%2C+%7Bi%2C+2%2C+49%7D%5D
+
+  const std::array<local_limb_type, static_cast<std::size_t>(UINT8_C(48))> small_primes =
+  {
+    static_cast<local_limb_type>(UINT8_C(  3)), static_cast<local_limb_type>(UINT8_C(  5)), static_cast<local_limb_type>(UINT8_C(  7)), static_cast<local_limb_type>(UINT8_C( 11)), static_cast<local_limb_type>(UINT8_C( 13)), static_cast<local_limb_type>(UINT8_C( 17)), static_cast<local_limb_type>(UINT8_C( 19)), static_cast<local_limb_type>(UINT8_C( 23)),
+    static_cast<local_limb_type>(UINT8_C( 29)), static_cast<local_limb_type>(UINT8_C( 31)), static_cast<local_limb_type>(UINT8_C( 37)), static_cast<local_limb_type>(UINT8_C( 41)), static_cast<local_limb_type>(UINT8_C( 43)), static_cast<local_limb_type>(UINT8_C( 47)), static_cast<local_limb_type>(UINT8_C( 53)), static_cast<local_limb_type>(UINT8_C( 59)),
+    static_cast<local_limb_type>(UINT8_C( 61)), static_cast<local_limb_type>(UINT8_C( 67)), static_cast<local_limb_type>(UINT8_C( 71)), static_cast<local_limb_type>(UINT8_C( 73)), static_cast<local_limb_type>(UINT8_C( 79)), static_cast<local_limb_type>(UINT8_C( 83)), static_cast<local_limb_type>(UINT8_C( 89)), static_cast<local_limb_type>(UINT8_C( 97)),
+    static_cast<local_limb_type>(UINT8_C(101)), static_cast<local_limb_type>(UINT8_C(103)), static_cast<local_limb_type>(UINT8_C(107)), static_cast<local_limb_type>(UINT8_C(109)), static_cast<local_limb_type>(UINT8_C(113)), static_cast<local_limb_type>(UINT8_C(127)), static_cast<local_limb_type>(UINT8_C(131)), static_cast<local_limb_type>(UINT8_C(137)),
+    static_cast<local_limb_type>(UINT8_C(139)), static_cast<local_limb_type>(UINT8_C(149)), static_cast<local_limb_type>(UINT8_C(151)), static_cast<local_limb_type>(UINT8_C(157)), static_cast<local_limb_type>(UINT8_C(163)), static_cast<local_limb_type>(UINT8_C(167)), static_cast<local_limb_type>(UINT8_C(173)), static_cast<local_limb_type>(UINT8_C(179)),
+    static_cast<local_limb_type>(UINT8_C(181)), static_cast<local_limb_type>(UINT8_C(191)), static_cast<local_limb_type>(UINT8_C(193)), static_cast<local_limb_type>(UINT8_C(197)), static_cast<local_limb_type>(UINT8_C(199)), static_cast<local_limb_type>(UINT8_C(211)), static_cast<local_limb_type>(UINT8_C(223)), static_cast<local_limb_type>(UINT8_C(227))
+  };
 
   {
-    // Is the prime candidate equal to zero or an even integer?
-    // If so, then it is not prime (false).
+    // Handle even numbers.
+    const auto n0 = static_cast<local_limb_type>(np);
 
-    const unsigned un { static_cast<std::uint_fast8_t>(n) };
+    const auto n_is_even =
+      (static_cast<local_limb_type>(n0 & static_cast<local_limb_type>(UINT8_C(1))) == static_cast<local_limb_type>(UINT8_C(0)));
 
-    if((un <  2U) && (n <  2U)) { return false; }
-    if((un == 2U) && (n == 2U)) { return true; }
-    if((un %  2U) == 0U) { return false; }
+    if(n_is_even)
+    {
+      // If true:
+      // Handle the trivial special case of 2, which is prime.
+
+      // If false:
+      // The prime candidate is not prime because it is either
+      // even and larger than 2 or equal to zero. Herewith, we
+      // handle non-prime even numbers and the non-primality of 0.
+      const bool
+        is_prime_two_or_is_non_prime_even
+        {
+          ((n0 == static_cast<local_limb_type>(UINT8_C(2))) && (np == unsigned { UINT8_C(2) }))
+        };
+
+      return is_prime_two_or_is_non_prime_even;
+    }
+
+    if((n0 <= small_primes.back()) && (np <= small_primes.back()))
+    {
+      // This handles the trivial special case of the (non-primality) of 1.
+      if(n0 == static_cast<local_limb_type>(UINT8_C(1)))
+      {
+        return false;
+      }
+
+      // Exclude pure small primes from the small_primes table.
+      // We are already restricted to np <= small_primes.back()
+      // via the query above. So it is sufficient to test only
+      // the lowest limb.
+      bool is_small_prime { false };
+
+      for(const auto& small_p : small_primes)
+      {
+        if(static_cast<local_limb_type>(n0 == small_p))
+        {
+          is_small_prime = true;
+
+          break;
+        }
+      }
+
+      if(is_small_prime)
+      {
+        return true;
+      }
+    }
+
+    // Handle numbers divisible by small primes in the small_primes table.
+    bool is_small_prime_divisible { false };
+
+    for(const auto& small_p : small_primes)
+    {
+      // This test does not include the secondary query if (np == small_p).
+      // Thisis OK here because exact small primes have already been
+      // filtered out above.
+
+      if((np % small_p) == static_cast<local_limb_type>(UINT8_C(0)))
+      {
+        is_small_prime_divisible = true;
+
+        break;
+      }
+    }
+
+    if(is_small_prime_divisible)
+    {
+      return false;
+    }
   }
 
   using local_wide_integer_type = UnsignedIntegerType;
@@ -113,26 +252,26 @@ auto solovay_strassen(const UnsignedIntegerType& n, const int iterations, Distri
   {
     local_wide_integer_type a { distribution(generator) };
 
-    local_wide_integer_type g = gcd(a, n);
+    local_wide_integer_type g = gcd(a, np);
 
     if((static_cast<std::uint_fast8_t>(g) > 1U) && (g > 1U))
     {
       return false;
     }
 
-    const int jac = detail::jacobi(a, n);
+    const int jac = detail::jacobi(a, np);
 
     if(jac == 0)
     {
       return false;
     }
 
-    const local_wide_integer_type exponent { (n - 1) / 2 };
-    const local_wide_integer_type mod_exp { powm(a, exponent, n) };
+    const local_wide_integer_type exponent { (np - 1) / 2 };
+    const local_wide_integer_type mod_exp { powm(a, exponent, np) };
 
-    const local_wide_integer_type jacobian { (jac == -1) ? (n - 1) : local_wide_integer_type { jac } };
+    const local_wide_integer_type jacobian { (jac == -1) ? (np - 1) : local_wide_integer_type { jac } };
 
-    if(mod_exp != (jacobian % n))
+    if(mod_exp != (jacobian % np))
     {
       return false;
     }
@@ -331,7 +470,9 @@ namespace prime_q
     {
       while(!set_prime_candidate(generator1, dist1, p0)) { ; }
 
-      constexpr unsigned number_of_trials { UINT8_C(56) };
+      using local_unsigned_fast_type = unsigned;
+
+      constexpr local_unsigned_fast_type number_of_trials { UINT8_C(56) };
 
       using local_distribution_type = DistributionType;
 
@@ -424,8 +565,8 @@ auto main() -> int
   random_engine1_type generator1 { prime_q::time_point<typename random_engine1_type::result_type>() };
   random_engine2_type generator2 { prime_q::time_point<typename random_engine2_type::result_type>() };
 
-  using local_wide_integer_type = boost::int128::uint128_t;
-  using local_distribution_type = boost::random::uniform_int_distribution<local_wide_integer_type>;
+  using local_wide_integer_type = boost::int128::uint128;
+  using local_distribution_type = boost_int128_uniform_int_distribution;
 
   // Select prime candidates from high in the value range of the type.
   // The higher bits in the lower bound of the range are set because
@@ -436,9 +577,10 @@ auto main() -> int
   constexpr local_wide_integer_type
     dist_min
     {
-      BOOST_INT128_UINT128_C(0xF0000000'00000000'00000000'00000001)
+      BOOST_INT128_UINT128_C(0xA0000000'00000000'00000000'00000001)
     };
 
+  // The maximum value in the range is max(uint128_t) - 1.
   local_distribution_type
     dist
     {
@@ -452,7 +594,7 @@ auto main() -> int
 
   bool result_total_is_ok { true };
 
-  constexpr ::std::uint32_t max_index { ::std::uint32_t { UINT32_C(0x80000) } };
+  constexpr ::std::uint32_t max_index { ::std::uint32_t { UINT32_C(0x20000) } };
 
   ::std::uint32_t run_index { ::std::uint32_t { UINT32_C(0) } };
 

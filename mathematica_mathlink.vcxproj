@@ -46,11 +46,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(ProjectDir)..\ExtendedNumberTypes\wide_integer;C:\ChrisGitRepos\std-big-int\include;C:\boost\boost_1_90_0;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);C:\Users\ckorm\Documents\Ks\PC_Software\NumericalPrograms\ExtendedNumberTypes\wide_integer;C:\ChrisGitRepos\cppalliance\int128\include;C:\ChrisGitRepos\modular_boost\math\include;C:\boost\boost_1_90_0;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(ProjectDir)..\ExtendedNumberTypes\wide_integer;C:\ChrisGitRepos\std-big-int\include;C:\boost\boost_1_90_0;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);C:\Users\ckorm\Documents\Ks\PC_Software\NumericalPrograms\ExtendedNumberTypes\wide_integer;C:\ChrisGitRepos\cppalliance\int128\include;C:\ChrisGitRepos\modular_boost\math\include;C:\boost\boost_1_90_0;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

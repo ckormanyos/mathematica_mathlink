@@ -34,32 +34,30 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
   // Calculate the integer's Jacobi symbol.
 
   // LCOV_EXCL_START
-  {
-    const ::std::uint_fast8_t un { static_cast<std::uint_fast8_t>(n) };
-
     // Is the prime candidate equal to zero or an even integer?
     // If so, then it is not prime (false).
 
-    if(((un == 0U) && (n== 0U)) || ((un % 2U) == 0U))
-    {
-      return 0;
-    }
+  if(   ((static_cast<std::uint_fast8_t>(n) == 0U) && (n== 0U))
+     || ((static_cast<std::uint_fast8_t>(n) % 2U) == 0U))
+  {
+    return 0;
   }
   // LCOV_EXCL_STOP
 
   a %= n;
 
-  int result = 1;
+  int result { 1 };
 
   while(a != 0)
   {
-    while((static_cast<std::uint_fast8_t>(a) % 2U) == 0U)
+    while((static_cast<::std::uint_fast8_t>(a) % 2U) == 0U)
     {
       a /= 2U;
 
-      const ::std::uint_fast8_t ur { static_cast<std::uint_fast8_t>(n % 8U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      const ::std::uint_fast8_t r { static_cast<::std::uint_fast8_t>(n % 8U) }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
-      if((ur == 3U) || (ur == 5U)) // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      if(   ((static_cast<::std::uint_fast8_t>(r) == 3U) && (r == 3U))  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+         || ((static_cast<::std::uint_fast8_t>(r) == 5U) && (r == 5U))) // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
       {
         result = -result;
       }
@@ -88,52 +86,142 @@ auto jacobi(UnsignedIntegerType a, UnsignedIntegerType n) -> int
 template<typename UnsignedIntegerType,
          typename DistributionType,
          typename GeneratorType>
-auto solovay_strassen(const UnsignedIntegerType& n, const int iterations, DistributionType& distribution, GeneratorType& generator) -> bool; // NOLINT(readability-avoid-const-params-in-decls)
+auto solovay_strassen(const UnsignedIntegerType& np, const int iterations, DistributionType& distribution, GeneratorType& generator) -> bool; // NOLINT(readability-avoid-const-params-in-decls)
 
 template<typename UnsignedIntegerType,
          typename DistributionType,
          typename GeneratorType>
-auto solovay_strassen(const UnsignedIntegerType& n, const int iterations, DistributionType& distribution, GeneratorType& generator) -> bool // NOLINT(readability-avoid-const-params-in-decls)
+auto solovay_strassen(const UnsignedIntegerType& np, const int iterations, DistributionType& distribution, GeneratorType& generator) -> bool // NOLINT(readability-avoid-const-params-in-decls)
 {
+  using local_wide_integer_type = UnsignedIntegerType;
+  using local_limb_type = typename local_wide_integer_type::limb_type;
+
   // Perform a Solovay-Strassen primality test.
 
-  // If this ever goes to production, then testing a lot more semi-small
-  // primes, as done in the library's Miller-Rabin, would make sense here.
+  // Table[Prime[i], {i, 2, 49, 1}] =
+  // {
+  //     3,   5,   7,  11,  13,  17,  19,  23,
+  //    29,  31,  37,  41,  43,  47,  53,  59,
+  //    61,  67,  71,  73,  79,  83,  89,  97,
+  //   101, 103, 107, 109, 113, 127, 131, 137,
+  //   139, 149, 151, 157, 163, 167, 173, 179,
+  //   181, 191, 193, 197, 199, 211, 223, 227
+  // }
+  // See also:
+  // https://www.wolframalpha.com/input/?i=Table%5BPrime%5Bi%5D%2C+%7Bi%2C+2%2C+49%7D%5D
+
+  const std::array<local_limb_type, static_cast<std::size_t>(UINT8_C(48))> small_primes =
+  {
+    static_cast<local_limb_type>(UINT8_C(  3)), static_cast<local_limb_type>(UINT8_C(  5)), static_cast<local_limb_type>(UINT8_C(  7)), static_cast<local_limb_type>(UINT8_C( 11)), static_cast<local_limb_type>(UINT8_C( 13)), static_cast<local_limb_type>(UINT8_C( 17)), static_cast<local_limb_type>(UINT8_C( 19)), static_cast<local_limb_type>(UINT8_C( 23)),
+    static_cast<local_limb_type>(UINT8_C( 29)), static_cast<local_limb_type>(UINT8_C( 31)), static_cast<local_limb_type>(UINT8_C( 37)), static_cast<local_limb_type>(UINT8_C( 41)), static_cast<local_limb_type>(UINT8_C( 43)), static_cast<local_limb_type>(UINT8_C( 47)), static_cast<local_limb_type>(UINT8_C( 53)), static_cast<local_limb_type>(UINT8_C( 59)),
+    static_cast<local_limb_type>(UINT8_C( 61)), static_cast<local_limb_type>(UINT8_C( 67)), static_cast<local_limb_type>(UINT8_C( 71)), static_cast<local_limb_type>(UINT8_C( 73)), static_cast<local_limb_type>(UINT8_C( 79)), static_cast<local_limb_type>(UINT8_C( 83)), static_cast<local_limb_type>(UINT8_C( 89)), static_cast<local_limb_type>(UINT8_C( 97)),
+    static_cast<local_limb_type>(UINT8_C(101)), static_cast<local_limb_type>(UINT8_C(103)), static_cast<local_limb_type>(UINT8_C(107)), static_cast<local_limb_type>(UINT8_C(109)), static_cast<local_limb_type>(UINT8_C(113)), static_cast<local_limb_type>(UINT8_C(127)), static_cast<local_limb_type>(UINT8_C(131)), static_cast<local_limb_type>(UINT8_C(137)),
+    static_cast<local_limb_type>(UINT8_C(139)), static_cast<local_limb_type>(UINT8_C(149)), static_cast<local_limb_type>(UINT8_C(151)), static_cast<local_limb_type>(UINT8_C(157)), static_cast<local_limb_type>(UINT8_C(163)), static_cast<local_limb_type>(UINT8_C(167)), static_cast<local_limb_type>(UINT8_C(173)), static_cast<local_limb_type>(UINT8_C(179)),
+    static_cast<local_limb_type>(UINT8_C(181)), static_cast<local_limb_type>(UINT8_C(191)), static_cast<local_limb_type>(UINT8_C(193)), static_cast<local_limb_type>(UINT8_C(197)), static_cast<local_limb_type>(UINT8_C(199)), static_cast<local_limb_type>(UINT8_C(211)), static_cast<local_limb_type>(UINT8_C(223)), static_cast<local_limb_type>(UINT8_C(227))
+  };
 
   {
-    const unsigned un { static_cast<std::uint_fast8_t>(n) };
+    // Handle even numbers.
+    const auto n0 = static_cast<local_limb_type>(np);
 
-    if((un <  2U) && (n <  2U)) { return false; }
-    if((un == 2U) && (n == 2U)) { return true; }
-    if((un %  2U) == 0U) { return false; }
+    const auto n_is_even =
+      (static_cast<local_limb_type>(n0 & static_cast<local_limb_type>(UINT8_C(1))) == static_cast<local_limb_type>(UINT8_C(0)));
+
+    if(n_is_even)
+    {
+      // If true:
+      // Handle the trivial special case of 2, which is prime.
+
+      // If false:
+      // The prime candidate is not prime because it is either
+      // even and larger than 2 or equal to zero. Herewith, we
+      // handle non-prime even numbers and the non-primality of 0.
+      const bool
+        is_prime_two_or_is_non_prime_even
+        {
+          ((n0 == static_cast<local_limb_type>(UINT8_C(2))) && (np == unsigned { UINT8_C(2) }))
+        };
+
+      return is_prime_two_or_is_non_prime_even;
+    }
+
+    if((n0 <= small_primes.back()) && (np <= small_primes.back()))
+    {
+      // This handles the trivial special case of the (non-primality) of 1.
+      if(n0 == static_cast<local_limb_type>(UINT8_C(1)))
+      {
+        return false;
+      }
+
+      // Exclude pure small primes from the small_primes table.
+      // We are already restricted to np <= small_primes.back()
+      // via the query above. So it is sufficient to test only
+      // the lowest limb.
+      bool is_small_prime { false };
+
+      for(const auto& small_p : small_primes)
+      {
+        if(static_cast<local_limb_type>(n0 == small_p))
+        {
+          is_small_prime = true;
+
+          break;
+        }
+      }
+
+      if(is_small_prime)
+      {
+        return true;
+      }
+    }
+
+    // Handle numbers divisible by small primes in the small_primes table.
+    bool is_small_prime_divisible { false };
+
+    for(const auto& small_p : small_primes)
+    {
+      // This test does not include the secondary query if (np == small_p).
+      // Thisis OK here because exact small primes have already been
+      // filtered out above.
+
+      if((np % small_p) == static_cast<local_limb_type>(UINT8_C(0)))
+      {
+        is_small_prime_divisible = true;
+
+        break;
+      }
+    }
+
+    if(is_small_prime_divisible)
+    {
+      return false;
+    }
   }
-
-  using local_wide_integer_type = UnsignedIntegerType;
 
   for(int i = 0; i < iterations; ++i)
   {
     local_wide_integer_type a { distribution(generator) };
 
-    local_wide_integer_type g = gcd(a, n);
+    local_wide_integer_type g = gcd(a, np);
 
     if((static_cast<std::uint_fast8_t>(g) > 1U) && (g > 1U))
     {
       return false;
     }
 
-    const int jac = detail::jacobi(a, n);
+    const int jac = detail::jacobi(a, np);
 
     if(jac == 0)
     {
       return false;
     }
 
-    const local_wide_integer_type exponent { (n - 1) / 2 };
-    const local_wide_integer_type mod_exp { powm(a, exponent, n) };
+    const local_wide_integer_type exponent { (np - 1) / 2 };
+    const local_wide_integer_type mod_exp { powm(a, exponent, np) };
 
-    const local_wide_integer_type jacobian { (jac == -1) ? (n - 1) : jac };
+    const local_wide_integer_type jacobian { (jac == -1) ? (np - 1) : local_wide_integer_type { jac } };
 
-    if(mod_exp != (jacobian % n))
+    if(mod_exp != (jacobian % np))
     {
       return false;
     }
@@ -390,7 +478,11 @@ namespace prime_q
 
       ++seed_prescaler;
 
-      const auto seed_prescaler_mod1024 = static_cast<::std::uint32_t>(seed_prescaler % static_cast<::std::uint32_t>(UINT16_C(1024)));
+      const auto
+        seed_prescaler_mod1024
+        {
+          static_cast<::std::uint32_t>(seed_prescaler % static_cast<::std::uint32_t>(UINT16_C(1024)))
+        };
 
       if(seed_prescaler_mod1024 == static_cast<::std::uint32_t>(UINT8_C(0)))
       {
@@ -432,13 +524,19 @@ auto main() -> int
   using local_distribution_type = ::math::wide_integer::uniform_int_distribution<local_wide_integer_type::my_width2, typename local_wide_integer_type::limb_type>;
   #endif
 
-  // Select prime candidates from a range of 10^60 ... max(uint256_t) - 1.
+  // Select prime candidates from high in the value range of the type.
+  // The higher bits in the lower bound of the range are set because
+  // statistics are collected to verify the prime number dsnsity.
+  // For this purpose, it's best to have prime candidates with relatively
+  // close to the widest bit-range of the type.
+
   constexpr local_wide_integer_type
     dist_min
     {
-      "1000000000000000000000000000000000000000000000000000000000000"
+      "0xA0000000'00000000'00000000'00000000'00000000'00000000'00000000'00000001"
     };
 
+  // The maximum value in the range is max(uint256_t) - 1.
   local_distribution_type
     dist
     {

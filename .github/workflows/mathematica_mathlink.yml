@@ -43,7 +43,7 @@ jobs:
           grep BOOST_VERSION ../boost-root/boost/version.hpp
           echo "compile ./${{ matrix.test }}"
           ${{ matrix.compiler }} -v
-          ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -std=${{ matrix.standard }} -c -I. -I../boost-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          ${{ matrix.compiler }} -finline-functions -O3 -Werror -Wall -Wextra -Wpedantic -std=${{ matrix.standard }} -c -I. -I../boost-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o
   gcc-clang-native-with-wide-integer:
@@ -69,7 +69,7 @@ jobs:
           ${{ matrix.compiler }} -v
           echo "compile ./${{ matrix.test }}"
           ${{ matrix.compiler }} -v
-          ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wundef -Wunused-parameter -Wuninitialized -Wunreachable-code -Winit-self -Wzero-as-null-pointer-constant -std=${{ matrix.standard }} -c -I. -I../wide-integer-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          ${{ matrix.compiler }} -finline-functions -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wundef -Wunused-parameter -Wuninitialized -Wunreachable-code -Winit-self -Wzero-as-null-pointer-constant -std=${{ matrix.standard }} -c -I. -I../wide-integer-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o
   gcc-clang-native-std-big-int-mul:
@@ -87,7 +87,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: '0'
-      - name: clone-wide-integer-master
+      - name: clone-std-big-int-main
         run: |
           git clone -b main --depth 1 https://github.com/eisenwave/std-big-int.git ../std-big-int-root
       - name: gcc-clang-native
@@ -95,7 +95,7 @@ jobs:
           ${{ matrix.compiler }} -v
           echo "compile ./${{ matrix.test }}"
           ${{ matrix.compiler }} -v
-          ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../std-big-int-root/include ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          ${{ matrix.compiler }} -finline-functions -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../std-big-int-root/include ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o
   gcc-clang-native-int128-prime:
@@ -113,19 +113,6 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: '0'
-      - name: clone-submods-bootstrap-headers-boost-develop
-        run: |
-          git clone -b develop --depth 1 https://github.com/boostorg/boost.git ../boost-root
-          cd ../boost-root
-          git submodule update --init tools
-          git submodule update --init libs/assert
-          git submodule update --init libs/config
-          git submodule update --init libs/math
-          git submodule update --init libs/integer
-          git submodule update --init libs/random
-          git submodule update --init libs/type_traits
-          ./bootstrap.sh
-          ./b2 headers
       - name: clone-int128-develop
         run: |
           git clone -b develop --depth 1 https://github.com/cppalliance/int128.git ../int128-root
@@ -134,7 +121,7 @@ jobs:
           ${{ matrix.compiler }} -v
           echo "compile ./${{ matrix.test }}"
           ${{ matrix.compiler }} -v
-          ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../int128-root/include -I../boost-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          ${{ matrix.compiler }} -finline-functions -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -std=${{ matrix.standard }} -c -I. -I../int128-root/include ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o
   gcc-clang-native-alt-prime-q:
@@ -160,6 +147,6 @@ jobs:
           ${{ matrix.compiler }} -v
           echo "compile ./${{ matrix.test }}"
           ${{ matrix.compiler }} -v
-          ${{ matrix.compiler }} -finline-functions -m64 -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wundef -Wunused-parameter -Wuninitialized -Wunreachable-code -Winit-self -Wzero-as-null-pointer-constant -std=${{ matrix.standard }} -c -DML_USE_SOLOVAY_STRASSEN_PRIME_Q -I. -I../wide-integer-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
+          ${{ matrix.compiler }} -finline-functions -O3 -Werror -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wundef -Wunused-parameter -Wuninitialized -Wunreachable-code -Winit-self -Wzero-as-null-pointer-constant -std=${{ matrix.standard }} -c -DML_USE_SOLOVAY_STRASSEN_PRIME_Q -I. -I../wide-integer-root ./test/${{ matrix.test }}.cpp -o ${{ matrix.test }}.o
           echo "ls -la ./${{ matrix.test }}.o"
           ls -la ./${{ matrix.test }}.o
